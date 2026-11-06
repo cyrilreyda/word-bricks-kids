@@ -1,0 +1,2336 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Цеглинки слів · Інформатика в 131-й</title>
+<link href="fonts/fonts.css" rel="stylesheet">   <!-- локальні шрифти: гра працює без інтернету -->
+<link rel="manifest" href="manifest.webmanifest">   <!-- гру можна встановити як програму -->
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="theme-color" content="#16A3A0">
+<style>
+  :root{
+    --bg:#F6F5FB; --ink:#1B1B3A; --ink-soft:#514F72; --surface:#FFFFFF; --line:#E4E1F5;
+    --purple:#6C5CE7; --purple-dark:#5340c9; --teal:#16A3A0; --teal-dark:#0E7C7A; --coral:#FF6B4A;
+    --yellow:#FFC93C; --pink:#FF5D9E; --blue:#2D9CDB;
+    --radius-s:10px; --radius-m:16px; --radius-l:26px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:'Nunito Sans',sans-serif; line-height:1.6; -webkit-font-smoothing:antialiased;}
+  h1,h2,h3,h4{font-family:'Baloo 2','Nunito Sans',sans-serif; font-weight:700; margin:0; color:var(--ink);}
+  button{font:inherit;}
+  [hidden]{display:none !important;}
+  .container{max-width:980px; margin:0 auto; padding:0 16px;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{position:sticky; top:0; z-index:10; background:rgba(246,245,251,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:980px; margin:0 auto; padding:12px 16px; display:flex; align-items:center; gap:12px;}
+  .back-link{font-family:'Baloo 2',sans-serif; font-weight:600; font-size:14px; color:var(--teal-dark); text-decoration:none; white-space:nowrap;}
+  .back-link:hover{text-decoration:underline;}
+  .game-title{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .top-btn{margin-left:auto; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:14px; border:1.5px solid var(--teal); background:var(--surface); color:var(--teal-dark); border-radius:999px; padding:4px 14px; cursor:pointer; white-space:nowrap; text-decoration:none;}
+  .top-btn:hover{background:#E3F7F6;}
+  .fs-btn{margin-left:0; align-self:stretch; display:flex; align-items:center; padding:0 9px;}
+  .fs-btn svg{width:20px; height:20px;}
+  .fs-btn[hidden], .fs-btn .fs-off, .fs-btn.full .fs-on{display:none;}
+  .fs-btn.full .fs-off{display:block;}
+  @media (max-width:700px){ .game-title{display:none;} .top-btn .long{display:none;} .top-btn{padding:4px 11px;} .fs-btn{padding:0 8px;} }
+
+  main{padding:16px 0 40px;}
+
+  /* ---------- Кнопки й панелі ---------- */
+  .panel{background:var(--surface); border:1.5px solid var(--line); border-radius:var(--radius-l); padding:20px; margin-top:16px;}
+  .btn{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:15px; border:none; border-radius:999px; padding:10px 20px; cursor:pointer;}
+  .btn-primary{background:var(--teal); color:#fff;}
+  .btn-primary:hover{background:var(--teal-dark);}
+  .btn-big{font-size:19px; padding:12px 30px; box-shadow:0 4px 0 var(--teal-dark);}
+  .btn-big:active{transform:translateY(2px); box-shadow:0 2px 0 var(--teal-dark);}
+  .btn-ghost{background:var(--bg); color:var(--ink); border:1.5px solid var(--line);}
+  .btn-ghost:hover{border-color:var(--teal);}
+  .toast{position:fixed; left:50%; bottom:24px; z-index:40; transform:translate(-50%, 20px); opacity:0; pointer-events:none; max-width:calc(100% - 32px); text-align:center;
+    background:var(--ink); color:#fff; font-family:'Baloo 2','Nunito Sans',sans-serif; font-weight:600; font-size:15px; padding:8px 18px; border-radius:999px;
+    box-shadow:0 8px 20px rgba(27,27,58,.25); transition:opacity .2s ease, transform .2s ease;}
+  .toast.show{opacity:1; transform:translate(-50%, 0);}
+  .confetti{position:fixed; top:-20px; width:10px; height:16px; border-radius:3px; z-index:30; pointer-events:none; animation:fall linear forwards;}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg);}}
+  @keyframes beat{50%{transform:scale(1.3);}}
+  .teacher-note{margin-top:10px; text-align:center; font-size:12.5px; color:var(--ink-soft); opacity:.8;}
+  .teacher-note:empty{display:none;}
+
+  /* ---------- Вибір режиму, класу й рівня ---------- */
+  .intro{display:flex; align-items:center; gap:20px;}
+  .intro .art{width:120px; flex-shrink:0;}
+  .intro h1{font-size:28px; line-height:1.15;}
+  .intro p{margin:4px 0 0; font-size:17px;}
+  .qmark{display:inline-block; min-width:26px; padding:0 6px; border-radius:7px; background:var(--purple); color:#fff; font-family:'Baloo 2',sans-serif; font-weight:800; text-align:center; line-height:1.4;}
+  @media (max-width:520px){ .intro{flex-direction:column; text-align:center; gap:8px;} .intro .art{width:96px;} }
+  .modes{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:18px;}
+  .mode{display:flex; align-items:center; justify-content:center; gap:8px; border:1.5px solid var(--line); background:var(--bg); border-radius:var(--radius-m); padding:10px 12px; cursor:pointer;
+    font-family:'Baloo 2','Nunito Sans',sans-serif; font-weight:800; font-size:19px; color:var(--ink-soft); transition:all .15s ease;}
+  .mode:hover{border-color:var(--teal);}
+  .mode.on{background:#E3F7F6; border-color:var(--teal); color:var(--ink); box-shadow:0 0 0 2px var(--teal);}
+  .mode[data-mode="en"].on{background:#FFEDE8; border-color:var(--coral); box-shadow:0 0 0 2px var(--coral);}
+  .mode small{font-family:'Nunito Sans',sans-serif; font-weight:700; font-size:13px; color:var(--ink-soft);}
+  .levels-title{font-size:17px; margin:18px 0 10px;}
+  .grades{display:grid; grid-template-columns:repeat(4, 1fr); gap:10px;}
+  @media (max-width:640px){ .grades{grid-template-columns:repeat(2, 1fr);} }
+  .grade{display:flex; flex-direction:column; align-items:center; border:1.5px solid var(--line); background:var(--surface); border-radius:var(--radius-m); padding:8px 6px; cursor:pointer; transition:all .15s ease;}
+  .grade:hover{border-color:var(--teal); transform:translateY(-2px);}
+  .grade.on{background:#E3F7F6; border-color:var(--teal); box-shadow:0 0 0 2px var(--teal);}
+  .grade b{font-family:'Baloo 2','Nunito Sans',sans-serif; font-weight:800; font-size:22px; line-height:1.2;}
+  .grade span{font-size:12.5px; font-weight:700; color:var(--ink-soft);}
+  .levels{display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;}
+  @media (max-width:640px){ .levels{grid-template-columns:1fr;} }
+  .level{display:flex; flex-direction:column; align-items:center; gap:2px; border:1.5px solid var(--line); background:var(--surface); border-radius:var(--radius-m); padding:14px 10px 12px; cursor:pointer; text-align:center; transition:all .15s ease;}
+  .level:hover{border-color:var(--teal); transform:translateY(-2px); box-shadow:0 6px 16px rgba(27,27,58,.08);}
+  .level .lv-ico{font-size:30px; line-height:1;}
+  .level .lv-name{font-family:'Baloo 2','Nunito Sans',sans-serif; font-weight:800; font-size:21px; line-height:1.2;}
+  .level .lv-info{font-size:13px; font-weight:600; color:var(--ink-soft);}
+  .level .lv-best{margin-top:6px; font-size:13px; font-weight:700; color:var(--ink-soft); background:var(--bg); border-radius:999px; padding:1px 12px;}
+  .level .lv-best.got{background:#FFF4D6; color:#8A6200;}
+
+  /* Колекція на стартовому екрані: скільки зібрано й кілька останніх предметів */
+  .col-strip{display:flex; align-items:center; gap:10px 14px; flex-wrap:wrap; margin-top:20px; padding-top:16px; border-top:1.5px dashed var(--line);}
+  .col-strip h3{font-size:17px;}
+  .col-thumbs{display:flex; gap:4px; flex-wrap:wrap;}
+  .col-thumbs svg{width:34px; height:34px;}
+  .col-strip .btn{margin-left:auto;}
+
+  /* ---------- Гра ---------- */
+  .hud{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center; margin:0 auto 10px;}
+  .chip{display:inline-flex; align-items:center; gap:6px; background:var(--surface); border:1.5px solid var(--line); border-radius:999px; padding:3px 14px; font-family:'Baloo 2','Nunito Sans',sans-serif; font-weight:800; font-size:19px; line-height:1.4; white-space:nowrap;}
+  .chip svg{width:24px; height:24px;}
+  .chip.score span{display:inline-block; min-width:1.4em; transition:transform .2s ease;}
+  .chip.score span.pop{transform:scale(1.35);}
+  .chip.time.low{color:#C2410C; border-color:#FFC4B5;}
+  .chip.words.bump{animation:beat .4s ease;}
+  .turbo-btn{display:inline-flex; align-items:center; gap:6px; border:1.5px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:999px; padding:3px 14px; cursor:pointer;
+    font-family:'Baloo 2','Nunito Sans',sans-serif; font-weight:800; font-size:17px; line-height:1.5; white-space:nowrap; transition:all .15s ease;}
+  .turbo-btn:hover{border-color:var(--coral); color:#C2410C;}
+  .turbo-btn.on{background:var(--coral); border-color:var(--coral); color:#fff; box-shadow:0 0 0 3px #FFD3C8; animation:beat .35s ease;}
+  .turbo-btn small{font-size:13px; opacity:.85;}
+  .round-btn{width:38px; height:38px; border-radius:50%; border:1.5px solid var(--line); background:var(--surface); color:var(--ink-soft); font-size:16px; font-weight:800; line-height:1; cursor:pointer; padding:0;}
+  .round-btn:hover{border-color:var(--teal); color:var(--teal-dark);}
+  .round-btn.exit:hover{border-color:var(--coral); color:var(--coral);}
+
+  .play{display:flex; gap:16px; align-items:flex-start; justify-content:center;}
+  .field{position:relative; flex:0 0 auto; width:var(--fw, 480px); border-radius:var(--radius-l); overflow:hidden; background:#2F5D50;
+    user-select:none; -webkit-user-select:none; touch-action:none; cursor:none; box-shadow:0 0 0 1.5px var(--line);}
+  .field canvas{display:block; width:100%; height:auto;}
+  .over{position:absolute; inset:0; z-index:5; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; background:rgba(27,27,58,.5); padding:16px; text-align:center; cursor:default;}
+  .over h2{color:#fff; font-size:30px; text-shadow:0 3px 0 rgba(0,0,0,.25);}
+  .count{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:84px; line-height:1; color:#fff; text-shadow:0 4px 0 rgba(0,0,0,.25); animation:beat .5s ease;}
+  .over-card{background:var(--surface); border-radius:var(--radius-m); padding:12px 16px; font-weight:700; font-size:15px; line-height:1.45; max-width:300px;}
+  /* Спіймане слово на вузькому екрані: бічної панелі немає, тож предмет на мить видно вгорі поля */
+  .find-pop{position:absolute; left:50%; top:10px; z-index:4; transform:translateX(-50%); display:none; align-items:center; gap:8px; pointer-events:none;
+    background:rgba(255,255,255,.95); border-radius:999px; padding:4px 16px 4px 6px; box-shadow:0 6px 18px rgba(0,0,0,.25);
+    font-family:'Baloo 2','Nunito Sans',sans-serif; font-weight:800; font-size:17px; white-space:nowrap;}
+  .find-pop svg{width:40px; height:40px;}
+  @media (max-width:720px){ .find-pop.show{display:flex; animation:pop-in .3s ease;} }
+  @keyframes pop-in{from{opacity:0; transform:translateX(-50%) scale(.7);}}
+
+  /* Бічна панель: остання знахідка й підказки */
+  .side{width:190px; flex-shrink:0; background:var(--surface); border:1.5px solid var(--line); border-radius:var(--radius-l); padding:14px 12px; text-align:center;}
+  .side h4{font-size:15px; color:var(--ink-soft);}
+  .find{min-height:170px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;}
+  .find svg{width:96px; height:96px;}
+  .find.new svg{animation:beat .6s ease;}
+  .find b{font-family:'Baloo 2','Nunito Sans',sans-serif; font-weight:800; font-size:19px; line-height:1.2;}
+  .find span{font-size:13px; font-weight:600; color:var(--ink-soft); line-height:1.35;}
+  .find .new-tag{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:12px; color:#fff; background:var(--coral); border-radius:999px; padding:0 10px;}
+  .find .empty{font-size:13.5px; color:var(--ink-soft); line-height:1.4;}
+  .side small{display:block; margin-top:10px; padding-top:10px; border-top:1.5px dashed var(--line); font-size:12.5px; line-height:1.45; color:var(--ink-soft);}
+  @media (max-width:720px){ .play{flex-direction:column; align-items:center;} .side{display:none;} }
+
+  /* ---------- Майстерня: поле, цеглинки, дощечка ---------- */
+  .garage{display:grid; grid-template-columns:150px 1fr; gap:10px 20px; margin-top:20px; padding-top:16px; border-top:1.5px dashed var(--line);}
+  @media (max-width:640px){ .garage{grid-template-columns:1fr;} .g-prev{margin:0 auto;} }
+  .garage-head{grid-column:1 / -1; display:flex; align-items:center; gap:6px 12px; flex-wrap:wrap;}
+  .garage-head h3{font-size:17px;}
+  .bank{display:inline-flex; align-items:center; gap:5px; font-family:'Baloo 2','Nunito Sans',sans-serif; font-weight:800; font-size:16px; color:#8A6200; background:#FFF4D6; border-radius:999px; padding:0 12px;}
+  .bank svg{width:20px; height:20px;}
+  .next-goal{font-size:13.5px; font-weight:600; color:var(--ink-soft);}
+  .g-prev{grid-row:span 3; width:150px; border-radius:var(--radius-m); overflow:hidden;}
+  .g-prev img{display:block; width:100%; height:auto;}
+  .g-row h4{font-size:14px; color:var(--ink-soft); margin:0 0 6px;}
+  .picks{display:flex; flex-wrap:wrap; gap:8px;}
+  .pick{display:flex; flex-direction:column; align-items:center; gap:3px; min-width:78px; border:1.5px solid var(--line); background:var(--surface); border-radius:var(--radius-m); padding:7px 8px 5px; cursor:pointer;
+    font-family:'Baloo 2','Nunito Sans',sans-serif; font-weight:700; font-size:13px; line-height:1.2; color:var(--ink); transition:all .15s ease;}
+  .pick:hover:not(:disabled){border-color:var(--teal); transform:translateY(-2px);}
+  .pick.on{background:#E3F7F6; border-color:var(--teal); box-shadow:0 0 0 2px var(--teal);}
+  .pick:disabled{cursor:not-allowed; color:var(--ink-soft);}
+  .pick:disabled img{filter:grayscale(1) opacity(.4);}
+  .pick img{display:block; width:62px; height:34px; border-radius:6px;}
+  .pick small{font-size:11.5px; color:#8A6200;}
+  .unlock{border:2px dashed var(--yellow); border-radius:var(--radius-m); padding:10px 12px 12px; margin:12px auto 0; max-width:440px;}
+  .unlock b{font-family:'Baloo 2','Nunito Sans',sans-serif; font-size:17px;}
+  .unlock-list{display:flex; flex-wrap:wrap; justify-content:center; gap:10px 18px; margin-top:8px;}
+  .unlock-item{display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700;}
+  .unlock-item img{width:50px; height:28px; border-radius:5px;}
+  .unlock-item svg{width:34px; height:34px;}
+
+  /* ---------- Гравці ---------- */
+  .player-btn{margin-left:auto; display:inline-flex; align-items:center; gap:6px; max-width:200px; overflow:hidden;}
+  .player-btn + .top-btn{margin-left:0;}
+  .col-btn{margin-left:0;}
+  .player-btn .long{overflow:hidden; text-overflow:ellipsis;}
+  .pb-pad{display:block; flex-shrink:0; width:34px; height:12px;}
+  .overlay{position:fixed; inset:0; z-index:20; background:rgba(27,27,58,.45); display:none; align-items:center; justify-content:center; padding:16px;}
+  .overlay.show{display:flex;}
+  .win{background:var(--surface); border-radius:var(--radius-l); padding:26px 24px; max-width:470px; width:100%; text-align:center; box-shadow:0 20px 50px rgba(27,27,58,.25); max-height:90vh; overflow:auto;}
+  .win h2{font-size:26px; margin-bottom:2px;}
+  .win .sub{color:var(--ink-soft); font-size:14.5px; margin:0;}
+  .win .big{font-size:56px; line-height:1; margin-bottom:6px;}
+  .win.prof h2{font-size:22px;}
+  .name-form{display:flex; gap:8px; margin:14px 0 6px;}
+  .name-form input{flex:1; min-width:0; font:inherit; font-size:16px; padding:9px 14px; border:1.5px solid var(--line); border-radius:999px; outline:none; color:var(--ink);}
+  .name-form input:focus{border-color:var(--teal);}
+  .known{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:14px 0 4px;}
+  .chip-btn{font-family:'Baloo 2','Nunito Sans',sans-serif; font-weight:600; font-size:14px; border:1.5px solid var(--line); background:var(--surface); color:var(--ink); border-radius:999px; padding:5px 14px; cursor:pointer;}
+  .chip-btn:hover{border-color:var(--teal);}
+  .note-small{font-size:13px; color:var(--ink-soft); margin:6px 0 0;}
+  .note-small:empty{display:none;}
+  .btn-small{font-size:13.5px; padding:7px 14px;}
+  .players{display:flex; flex-direction:column; gap:6px; margin-top:12px; text-align:left;}
+  .pl-row{display:flex; align-items:center; gap:10px; border:1.5px solid var(--line); border-radius:var(--radius-m); padding:6px 8px 6px 12px; background:var(--surface);}
+  .pl-row.me{border-color:var(--teal); background:#F2FBF7;}
+  .pl-row .pb-pad{width:44px; height:16px;}
+  .pl-name{flex:1; min-width:0; font-family:'Baloo 2','Nunito Sans',sans-serif; font-weight:700; font-size:15.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .pl-name small{display:block; font-family:'Nunito Sans',sans-serif; font-weight:600; font-size:12px; color:var(--ink-soft);}
+  .pl-you{font-family:'Baloo 2','Nunito Sans',sans-serif; font-weight:700; font-size:13px; color:var(--teal-dark); padding:0 6px;}
+  .pl-del{width:30px; height:30px; border-radius:50%; border:none; background:none; color:var(--ink-soft); font-size:15px; cursor:pointer;}
+  .pl-del:hover{background:#FFEFE9; color:#C2410C;}
+  .prof-foot{display:flex; justify-content:flex-end; margin-top:14px;}
+
+  /* ---------- Колекція ---------- */
+  .win.col-win{max-width:760px; padding:18px 20px 22px; text-align:left;}
+  .col-head{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .col-head h2{font-size:24px; margin:0;}
+  .col-head .next-goal{flex:1;}
+  .col-win .modes{margin-top:12px;}
+  .col-win .mode{font-size:16px; padding:6px 10px;}
+  .col-grade{margin-top:14px;}
+  .col-grade h4{font-size:15px; color:var(--ink-soft); margin-bottom:6px;}
+  .col-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(98px, 1fr)); gap:8px;}
+  .citem{display:flex; flex-direction:column; align-items:center; gap:2px; border:1.5px solid var(--line); background:var(--surface); border-radius:var(--radius-m); padding:8px 4px 6px; cursor:pointer;
+    font-family:'Baloo 2','Nunito Sans',sans-serif; font-weight:700; font-size:13.5px; line-height:1.15; color:var(--ink); text-align:center; min-height:104px; transition:all .15s ease; position:relative;}
+  .citem:hover{border-color:var(--teal); transform:translateY(-2px);}
+  .citem svg{width:56px; height:56px; flex-shrink:0;}
+  .citem.open{background:var(--bg); border-style:dashed; color:var(--ink-soft);}
+  .citem.open svg{filter:brightness(0); opacity:.12;}
+  .citem.locked{background:var(--bg); border-style:dashed; color:var(--ink-soft); cursor:default;}
+  .citem.locked:hover{transform:none; border-color:var(--line);}
+  .citem .lock{font-size:26px; line-height:56px; height:56px; opacity:.5;}
+  .citem small{font-family:'Nunito Sans',sans-serif; font-size:11.5px; font-weight:700; color:#8A6200;}
+  .citem .cnt{position:absolute; top:4px; right:6px; font-family:'Nunito Sans',sans-serif; font-size:11px; font-weight:800; color:var(--ink-soft);}
+  /* Картка предмета */
+  .detail{display:flex; gap:18px; align-items:center; margin-top:14px;}
+  .detail svg{width:150px; height:150px; flex-shrink:0;}
+  .detail h3{font-size:30px; line-height:1.15;}
+  .detail .tr{font-size:18px; font-weight:700; color:var(--ink-soft);}
+  .detail p{margin:6px 0 0; font-size:16px;}
+  .detail .meta{font-size:13px; color:var(--ink-soft);}
+  .detail-btns{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;}
+  @media (max-width:520px){ .detail{flex-direction:column; text-align:center;} .detail-btns{justify-content:center;} }
+
+  /* ---------- Результат ---------- */
+  .result{text-align:center; max-width:560px; margin-left:auto; margin-right:auto;}
+  .res-emoji{font-size:54px; line-height:1;}
+  .result h2{font-size:30px; margin:4px 0 2px;}
+  .res-stars{font-size:44px; line-height:1.1; letter-spacing:4px; color:var(--yellow); text-shadow:0 2px 0 #E0A800;}
+  .res-stars i{font-style:normal; color:var(--line); text-shadow:none;}
+  .gain{display:inline-flex; align-items:center; gap:6px; font-family:'Baloo 2','Nunito Sans',sans-serif; font-weight:800; font-size:24px; color:#8A6200; background:#FFF4D6; border-radius:999px; padding:2px 18px; margin:8px 0 4px;}
+  .gain svg{width:28px; height:28px;}
+  .res-record{font-family:'Baloo 2','Nunito Sans',sans-serif; font-weight:700; font-size:16px; color:#16803C;}
+  .res-found{display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin:12px auto 0;}
+  .res-found .citem{width:96px; cursor:default;}
+  .res-found .citem:hover{transform:none; border-color:var(--line);}
+  .res-found .new-tag{position:absolute; top:-8px; right:-6px; font-family:'Baloo 2',sans-serif; font-weight:800; font-size:11.5px; color:#fff; background:var(--coral); border-radius:999px; padding:0 8px;}
+  .res-list{list-style:none; padding:0; margin:12px auto 18px; display:grid; gap:4px; font-size:15px; max-width:380px; text-align:left;}
+  .res-list li{display:flex; justify-content:space-between; gap:12px; border-bottom:1px solid var(--line); padding:3px 2px;}
+  .res-list b{font-family:'Baloo 2','Nunito Sans',sans-serif; font-size:17px;}
+  .res-btns{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; align-items:center;}
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="topbar-inner">
+  <a class="back-link" href="https://cyrilreyda.github.io/" data-ui>← Інформатика в 131-й</a>
+  <span class="game-title">Цеглинки слів</span>
+  <button class="top-btn player-btn" id="playerBtn" type="button" title="Гравці на цьому комп'ютері" data-ui><img class="pb-pad" id="playerPad" alt=""><span class="long" id="playerName">Гравець</span></button>
+  <button class="top-btn col-btn" id="colBtn" type="button" title="Колекція зібраних предметів" data-ui>🎒<span class="long"> Колекція</span></button>
+  <a class="top-btn" href="guide/index.html" title="Інструкція для учнів і вчителів" data-ui>❓<span class="long"> Як грати</span></a>
+  <button class="top-btn fs-btn" id="fsBtn" type="button" title="На весь екран (F11)" aria-label="На весь екран (F11)" data-ui hidden>
+    <svg class="fs-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 10.5L20 4M14 4h6v6M10.5 13.5L4 20M4 14v6h6"/></svg>
+    <svg class="fs-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 4l-6 6M14 5v5h5M4 20l6-6M5 14h5v5"/></svg>
+  </button>
+</div></div>
+
+<main class="container">
+
+  <!-- Вибір режиму, класу й рівня -->
+  <section class="panel" id="setup">
+    <div class="intro">
+      <svg class="art" viewBox="0 0 120 100" aria-hidden="true">
+        <rect width="120" height="100" rx="14" fill="#2F5D50"/>
+        <g stroke="#1B1B3A" stroke-opacity=".25" stroke-width="1">
+          <rect x="8" y="10" width="24" height="10" rx="3" fill="#FF6B4A"/><rect x="34" y="10" width="24" height="10" rx="3" fill="#FF6B4A"/><rect x="60" y="10" width="24" height="10" rx="3" fill="#FF6B4A"/><rect x="86" y="10" width="24" height="10" rx="3" fill="#FF6B4A"/>
+          <rect x="8" y="22" width="24" height="10" rx="3" fill="#FFC93C"/><rect x="86" y="22" width="24" height="10" rx="3" fill="#FFC93C"/>
+          <rect x="8" y="34" width="24" height="10" rx="3" fill="#16A3A0"/><rect x="86" y="34" width="24" height="10" rx="3" fill="#16A3A0"/>
+        </g>
+        <rect x="34" y="22" width="50" height="10" rx="3" fill="#6C5CE7"/>
+        <text x="59" y="30.5" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="9" fill="#fff">?</text>
+        <rect x="36" y="52" width="46" height="13" rx="4" fill="#FFC93C" stroke="#E0A800" stroke-width="1.5"/>
+        <text x="59" y="61.5" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="8" fill="#1B1B3A">миша</text>
+        <path d="M59 47v3" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="1.5 2"/>
+        <circle cx="95" cy="66" r="4" fill="#fff"/>
+        <rect x="38" y="84" width="42" height="7" rx="3.5" fill="#16A3A0" stroke="#fff" stroke-width="1.5"/>
+      </svg>
+      <div>
+        <h1>Цеглинки слів</h1>
+        <p>Відбивай м'ячик дощечкою й збивай цеглинки. Серед них ховається блок <span class="qmark">?</span> зі словом: збий цеглинки під ним — і слово впаде. Спіймай його дощечкою, і предмет потрапить у твою колекцію!</p>
+      </div>
+    </div>
+    <div class="modes" id="modes">
+      <button class="mode" type="button" data-mode="info">💻 Інформатика <small id="modeInfoN"></small></button>
+      <button class="mode" type="button" data-mode="en">🔤 English <small id="modeEnN"></small></button>
+    </div>
+    <h3 class="levels-title">Обери клас</h3>
+    <div class="grades" id="grades"></div>
+    <h3 class="levels-title">Обери рівень — і гра почнеться</h3>
+    <div class="levels" id="levels"></div>
+    <div class="col-strip">
+      <h3>🎒 Колекція</h3><span class="next-goal" id="colStripN"></span>
+      <span class="col-thumbs" id="colThumbs"></span>
+      <button class="btn btn-ghost btn-small" id="colOpen" type="button">Переглянути</button>
+    </div>
+    <div class="garage" id="garage">
+      <div class="garage-head"><h3>Майстерня</h3><span class="bank" id="bank" title="Скарбничка: бали з усіх ігор"></span><span class="next-goal" id="nextGoal"></span></div>
+      <div class="g-prev"><img id="gPrev" alt="Як виглядатиме поле"></div>
+      <div class="g-row"><h4>Поле</h4><div class="picks" id="fieldPicks"></div></div>
+      <div class="g-row"><h4>Цеглинки</h4><div class="picks" id="brickPicks"></div></div>
+      <div class="g-row"><h4>Дощечка</h4><div class="picks" id="paddlePicks"></div></div>
+    </div>
+    <div class="teacher-note"></div>
+  </section>
+
+  <!-- Гра -->
+  <section id="game" hidden>
+    <div class="hud" id="hud">
+      <span class="chip score" title="Бали"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-star"/></svg><span id="score">0</span></span>
+      <span class="chip time" id="timeChip" title="Скільки лишилось часу">⏱ <span id="time">2:00</span></span>
+      <span class="chip words" id="wordsChip" title="Скільки слів спіймано">🎁 <span id="wordsGot">0</span></span>
+      <button class="turbo-btn" id="turboBtn" type="button" title="Турбо: м'ячик швидший, за цеглинки вдвічі більше балів" data-ui>🚀 Турбо <small id="turboX"></small></button>
+      <button class="round-btn" id="pauseBtn" title="Пауза (Пробіл)" data-ui>⏸</button>
+      <button class="round-btn exit" id="exitBtn" title="Вийти до вибору рівня" data-ui>✕</button>
+    </div>
+    <div class="play" id="play">
+      <div class="field" id="field">
+        <canvas id="cv" width="600" height="660"></canvas>
+        <div class="find-pop" id="findPop"></div>
+        <div class="over" id="countOver" hidden>
+          <div class="count" id="countNum">3</div>
+          <div class="over-card">Рухай мишу — дощечка їде за нею.<br>Клацни, щоб запустити м'ячик.</div>
+        </div>
+        <div class="over" id="pauseOver" hidden>
+          <h2>Пауза</h2>
+          <button class="btn btn-primary btn-big" id="resumeBtn" data-ui>▶ Грати далі</button>
+        </div>
+      </div>
+      <aside class="side" id="side">
+        <h4>Знахідка</h4>
+        <div class="find" id="find"></div>
+        <small>Миша — рух дощечки<br>Клацання — запуск м'ячика<br>← → — теж рух<br>Пробіл — пауза</small>
+      </aside>
+    </div>
+    <div class="teacher-note"></div>
+  </section>
+
+  <!-- Результат -->
+  <section class="panel result" id="result" hidden>
+    <div class="res-emoji" id="resEmoji">⏰</div>
+    <h2 id="resTitle">Час вийшов!</h2>
+    <div class="res-stars" id="resStars"></div>
+    <div class="gain" id="resScore"></div>
+    <div class="res-record" id="resRecord"></div>
+    <div class="res-found" id="resFound"></div>
+    <div id="resUnlock"></div>
+    <ul class="res-list" id="resList"></ul>
+    <div class="res-btns">
+      <button class="btn btn-primary btn-big" id="againBtn">🔁 Ще раз</button>
+      <button class="btn btn-ghost" id="levelsBtn">Обрати рівень</button>
+    </div>
+    <div class="teacher-note"></div>
+  </section>
+</main>
+
+<!-- Вибір гравця -->
+<div class="overlay" id="nameOverlay">
+  <div class="win" role="dialog" aria-labelledby="nameTitle">
+    <div class="big">👋</div>
+    <h2 id="nameTitle">Привіт! Як тебе звати?</h2>
+    <p class="sub">Під цим ім'ям на цьому комп'ютері збережуться твої бали й колекція.</p>
+    <div class="known" id="knownPlayers"></div>
+    <form class="name-form" id="nameForm">
+      <input id="nameInput" maxlength="24" placeholder="Ім'я та прізвище" autocomplete="off">
+      <button class="btn btn-primary" type="submit">Почати</button>
+    </form>
+    <p class="note-small" id="nameErr"></p>
+    <button class="btn btn-ghost btn-small" id="nameCancel" type="button" hidden>Скасувати</button>
+  </div>
+</div>
+
+<!-- Гравці на цьому комп'ютері -->
+<div class="overlay" id="profileOverlay">
+  <div class="win prof" role="dialog" aria-labelledby="profTitle">
+    <h2 id="profTitle">Гравці на цьому комп'ютері</h2>
+    <div class="players" id="playerList"></div>
+    <form class="name-form" id="addForm">
+      <input id="addInput" maxlength="24" placeholder="Ім'я нового гравця" autocomplete="off">
+      <button class="btn btn-primary" type="submit">＋ Додати</button>
+    </form>
+    <p class="note-small" id="addErr"></p>
+    <div class="prof-foot"><button class="btn btn-ghost btn-small" id="profClose" type="button">Закрити</button></div>
+  </div>
+</div>
+
+<!-- Колекція -->
+<div class="overlay" id="colOverlay">
+  <div class="win col-win" role="dialog" aria-labelledby="colTitle">
+    <div class="col-head">
+      <h2 id="colTitle">🎒 Колекція</h2><span class="next-goal" id="colCount"></span>
+      <button class="round-btn" id="colClose" type="button" title="Закрити">✕</button>
+    </div>
+    <div id="colList">
+      <div class="modes" id="colModes">
+        <button class="mode" type="button" data-cmode="info">💻 Інформатика</button>
+        <button class="mode" type="button" data-cmode="en">🔤 English</button>
+      </div>
+      <div id="colBody"></div>
+    </div>
+    <div id="colDetail" hidden></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- Малюнки предметів колекції: <symbol id="w-…"> з viewBox 48×48. У грі й колекції підключаються через <use href="#w-…">,
+     на полі (canvas) — як окремі картинки, зібрані з цих самих символів -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-star" viewBox="0 0 48 48">
+      <path d="M24 3.5l6.1 12.6 13.9 1.9-10.1 9.7 2.5 13.8L24 34.9l-12.4 6.6 2.5-13.8L4 18l13.9-1.9z" fill="#FFC93C" stroke="#E0A800" stroke-width="2.5" stroke-linejoin="round"/>
+      <circle cx="19.5" cy="23" r="2" fill="#8A6200"/><circle cx="28.5" cy="23" r="2" fill="#8A6200"/>
+      <path d="M20.5 28.5q3.5 3 7 0" fill="none" stroke="#8A6200" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- ===== Інформатика · 2 клас ===== -->
+    <symbol id="w-computer" viewBox="0 0 48 48">
+      <rect x="2" y="6" width="30" height="22" rx="2.5" fill="#3A3A58" stroke="#1B1B3A" stroke-width="2"/>
+      <rect x="5" y="9" width="24" height="16" rx="1" fill="#2D9CDB"/>
+      <path d="M8 13h12M8 17h16M8 21h9" stroke="#BDE6FF" stroke-width="2" stroke-linecap="round"/>
+      <path d="M14 28h6l1.5 5h-9z" fill="#6E6C8A"/>
+      <rect x="34" y="6" width="12" height="30" rx="2" fill="#E4E1F5" stroke="#514F72" stroke-width="2"/>
+      <path d="M37 11h6M37 15h6" stroke="#514F72" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="40" cy="29" r="2.2" fill="#3DBE6B"/>
+      <rect x="3" y="37" width="28" height="7" rx="2" fill="#E4E1F5" stroke="#514F72" stroke-width="2"/>
+      <path d="M6.5 40.5h21" stroke="#514F72" stroke-width="2.4" stroke-dasharray="2.4 1.4"/>
+      <rect x="35" y="38" width="7" height="8" rx="3.5" fill="#fff" stroke="#514F72" stroke-width="1.8"/>
+    </symbol>
+    <symbol id="w-monitor" viewBox="0 0 48 48">
+      <path d="M20 33l-2.5 8h13L28 33" fill="#6E6C8A" stroke="#1B1B3A" stroke-width="2" stroke-linejoin="round"/>
+      <rect x="13" y="40" width="22" height="4.5" rx="2.2" fill="#514F72"/>
+      <rect x="3" y="5" width="42" height="29" rx="3" fill="#3A3A58" stroke="#1B1B3A" stroke-width="2"/>
+      <rect x="6.5" y="8.5" width="35" height="22" rx="1.5" fill="#2D9CDB"/>
+      <path d="M8 29l10-10 6.5 6.5 4.5-4.5 11 8z" fill="#7FD3F7"/>
+      <circle cx="33" cy="15" r="3.2" fill="#FFC93C"/>
+    </symbol>
+    <symbol id="w-keyboard" viewBox="0 0 48 48">
+      <rect x="2" y="12" width="44" height="25" rx="4" fill="#514F72" stroke="#1B1B3A" stroke-width="2"/>
+      <path d="M6 18h36M6 24h36" stroke="#F6F5FB" stroke-width="3.6" stroke-dasharray="3.6 1.4"/>
+      <path d="M6 30.5h6M36 30.5h6" stroke="#F6F5FB" stroke-width="3.6"/>
+      <path d="M15.5 30.5h17" stroke="#FFC93C" stroke-width="3.6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-mouse" viewBox="0 0 48 48">
+      <path d="M24 8.5c0-3.5 3-5.5 7-5.5" fill="none" stroke="#514F72" stroke-width="2.2" stroke-linecap="round"/>
+      <rect x="12" y="8" width="24" height="37" rx="12" fill="#fff" stroke="#1B1B3A" stroke-width="2.2"/>
+      <path d="M23 9.3A11 11 0 0 0 13.1 20.5H23z" fill="#D9F3F2"/>
+      <path d="M12.5 21h23M24 8.5V21" stroke="#1B1B3A" stroke-width="2"/>
+      <rect x="22" y="12" width="4" height="6.5" rx="2" fill="#16A3A0"/>
+    </symbol>
+    <symbol id="w-sysunit" viewBox="0 0 48 48">
+      <rect x="12" y="3" width="24" height="42" rx="3" fill="#3A3A58" stroke="#1B1B3A" stroke-width="2"/>
+      <rect x="16" y="8" width="16" height="4" rx="1" fill="#6E6C8A"/>
+      <rect x="16" y="14.5" width="16" height="4" rx="1" fill="#6E6C8A"/>
+      <circle cx="24" cy="28" r="4.2" fill="none" stroke="#3DBE6B" stroke-width="2.2"/>
+      <path d="M24 22.5v5" stroke="#3DBE6B" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M17 37h14M17 40.5h14" stroke="#514F72" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-speakers" viewBox="0 0 48 48">
+      <g>
+        <rect x="3" y="7" width="18" height="36" rx="3" fill="#514F72" stroke="#1B1B3A" stroke-width="2"/>
+        <circle cx="12" cy="15" r="3.5" fill="#C9C7D9"/>
+        <circle cx="12" cy="31" r="6.5" fill="#C9C7D9" stroke="#1B1B3A" stroke-width="1.5"/><circle cx="12" cy="31" r="2.5" fill="#1B1B3A"/>
+      </g>
+      <g transform="translate(24 0)">
+        <rect x="3" y="7" width="18" height="36" rx="3" fill="#514F72" stroke="#1B1B3A" stroke-width="2"/>
+        <circle cx="12" cy="15" r="3.5" fill="#C9C7D9"/>
+        <circle cx="12" cy="31" r="6.5" fill="#C9C7D9" stroke="#1B1B3A" stroke-width="1.5"/><circle cx="12" cy="31" r="2.5" fill="#1B1B3A"/>
+      </g>
+    </symbol>
+    <symbol id="w-headphones" viewBox="0 0 48 48">
+      <path d="M8 29v-7a16 16 0 0 1 32 0v7" fill="none" stroke="#514F72" stroke-width="4" stroke-linecap="round"/>
+      <rect x="4" y="25" width="11" height="18" rx="4.5" fill="#FF6B4A" stroke="#C9452A" stroke-width="2"/>
+      <rect x="33" y="25" width="11" height="18" rx="4.5" fill="#FF6B4A" stroke="#C9452A" stroke-width="2"/>
+      <path d="M8 29v9M40 29v9" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".5"/>
+    </symbol>
+    <symbol id="w-printer" viewBox="0 0 48 48">
+      <rect x="13" y="4" width="22" height="14" fill="#fff" stroke="#6E6C8A" stroke-width="2"/>
+      <rect x="4" y="16" width="40" height="18" rx="4" fill="#C9C7D9" stroke="#514F72" stroke-width="2"/>
+      <circle cx="37.5" cy="22" r="2" fill="#3DBE6B"/>
+      <rect x="11" y="28" width="26" height="16" fill="#fff" stroke="#6E6C8A" stroke-width="2"/>
+      <path d="M15 33h18M15 38h12" stroke="#2D9CDB" stroke-width="2.4" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-tablet" viewBox="0 0 48 48">
+      <rect x="7" y="3" width="34" height="42" rx="4" fill="#3A3A58" stroke="#1B1B3A" stroke-width="2"/>
+      <rect x="10.5" y="7" width="27" height="32" rx="1.5" fill="#BDE6FF"/>
+      <path d="M15.5 12h1M23.5 12h1M31.5 12h1" stroke="#6C5CE7" stroke-width="5" stroke-linecap="round"/>
+      <path d="M15.5 20h1M23.5 20h1M31.5 20h1" stroke="#FF6B4A" stroke-width="5" stroke-linecap="round"/>
+      <path d="M15.5 28h1M23.5 28h1" stroke="#16A3A0" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="24" cy="42" r="1.6" fill="#C9C7D9"/>
+    </symbol>
+    <symbol id="w-phone" viewBox="0 0 48 48">
+      <rect x="13" y="2" width="22" height="44" rx="5" fill="#1B1B3A"/>
+      <rect x="15.5" y="7" width="17" height="33" rx="1.5" fill="#6C5CE7"/>
+      <rect x="20" y="3.6" width="8" height="1.8" rx=".9" fill="#514F72"/>
+      <rect x="18" y="11" width="10" height="5" rx="2.5" fill="#fff"/>
+      <rect x="20" y="19" width="10" height="5" rx="2.5" fill="#FFC93C"/>
+      <rect x="18" y="27" width="8" height="5" rx="2.5" fill="#fff"/>
+      <rect x="21" y="42" width="6" height="1.8" rx=".9" fill="#6E6C8A"/>
+    </symbol>
+
+    <!-- ===== Інформатика · 3 клас ===== -->
+    <symbol id="w-laptop" viewBox="0 0 48 48">
+      <rect x="8" y="7" width="32" height="23" rx="2.5" fill="#3A3A58" stroke="#1B1B3A" stroke-width="2"/>
+      <rect x="11" y="10" width="26" height="17" rx="1" fill="#16A3A0"/>
+      <rect x="14" y="13" width="14" height="9" rx="1" fill="#fff"/><rect x="14" y="13" width="14" height="2.5" fill="#FFC93C"/>
+      <path d="M3 32h42l-3 7H6z" fill="#C9C7D9" stroke="#514F72" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M20 35.5h8" stroke="#514F72" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-mic" viewBox="0 0 48 48">
+      <path d="M11 21a13 13 0 0 0 26 0" fill="none" stroke="#514F72" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M24 34v7M16 43h16" stroke="#514F72" stroke-width="3" stroke-linecap="round"/>
+      <rect x="17" y="3" width="14" height="25" rx="7" fill="#C9C7D9" stroke="#514F72" stroke-width="2"/>
+      <path d="M17.5 10h13M17.5 15h13M17.5 20h13" stroke="#6E6C8A" stroke-width="1.6"/>
+    </symbol>
+    <symbol id="w-webcam" viewBox="0 0 48 48">
+      <path d="M18 33l-4 9h20l-4-9" fill="#6E6C8A" stroke="#1B1B3A" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="24" cy="20" r="15" fill="#3A3A58" stroke="#1B1B3A" stroke-width="2"/>
+      <circle cx="24" cy="20" r="8" fill="#2D9CDB" stroke="#1B1B3A" stroke-width="2"/>
+      <circle cx="21.5" cy="17.5" r="2.6" fill="#fff" opacity=".8"/>
+      <circle cx="34" cy="10.5" r="1.9" fill="#FF6B4A"/>
+    </symbol>
+    <symbol id="w-scanner" viewBox="0 0 48 48">
+      <path d="M6 20L10 6h32l2 14" fill="#E4E1F5" stroke="#514F72" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M4 20h40v18a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z" fill="#C9C7D9" stroke="#514F72" stroke-width="2"/>
+      <rect x="8" y="23.5" width="32" height="8" rx="1" fill="#BDE6FF"/>
+      <path d="M21 23.5v8" stroke="#3DBE6B" stroke-width="3.2"/>
+      <circle cx="38" cy="36.5" r="1.8" fill="#3DBE6B"/>
+    </symbol>
+    <symbol id="w-flash" viewBox="0 0 48 48">
+      <g transform="rotate(-35 24 24)">
+        <rect x="19" y="3" width="10" height="12" fill="#C9C7D9" stroke="#6E6C8A" stroke-width="2"/>
+        <rect x="21" y="6.5" width="2.5" height="2.5" fill="#6E6C8A"/><rect x="24.5" y="6.5" width="2.5" height="2.5" fill="#6E6C8A"/>
+        <rect x="16.5" y="14" width="15" height="30" rx="3.5" fill="#FF6B4A" stroke="#C9452A" stroke-width="2"/>
+        <circle cx="24" cy="37" r="2.2" fill="#fff"/>
+        <path d="M20 19v12" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".5"/>
+      </g>
+    </symbol>
+    <symbol id="w-pointer" viewBox="0 0 48 48">
+      <path d="M13 4v33l8.5-7.5 5.5 13 6.5-2.8-5.5-12.7H40z" fill="#fff" stroke="#1B1B3A" stroke-width="2.6" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="w-icon" viewBox="0 0 48 48">
+      <rect x="10" y="3" width="28" height="28" rx="6" fill="#6C5CE7" stroke="#4B3DBF" stroke-width="2"/>
+      <path d="M14 26l7-8.5 5 5.5 3.5-3.5 4.5 6.5z" fill="#fff"/>
+      <circle cx="29" cy="11.5" r="3" fill="#FFC93C"/>
+      <rect x="7" y="36" width="34" height="8" rx="4" fill="#2D9CDB"/>
+      <path d="M12 40h24" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-file" viewBox="0 0 48 48">
+      <path d="M10 3h19l9 9v33H10z" fill="#fff" stroke="#514F72" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M29 3v9h9" fill="#E4E1F5" stroke="#514F72" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M15 20h18M15 26.5h18M15 33h12" stroke="#2D9CDB" stroke-width="2.6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-folder" viewBox="0 0 48 48">
+      <path d="M4 10a2 2 0 0 1 2-2h12l4 5h20a2 2 0 0 1 2 2v25a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" fill="#E0A800" stroke="#B07F00" stroke-width="2" stroke-linejoin="round"/>
+      <rect x="11" y="13" width="22" height="10" fill="#fff" stroke="#C9C7D9" stroke-width="1.5"/>
+      <path d="M4 19h40v21a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" fill="#FFC93C" stroke="#B07F00" stroke-width="2" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="w-desktop" viewBox="0 0 48 48">
+      <path d="M20 37h8l2 6.5H18z" fill="#6E6C8A"/>
+      <rect x="3" y="5" width="42" height="32" rx="3" fill="#2D9CDB" stroke="#1B6FA8" stroke-width="2"/>
+      <rect x="7" y="9" width="6" height="6" rx="1.5" fill="#FFC93C"/>
+      <rect x="7" y="18" width="6" height="6" rx="1.5" fill="#fff"/>
+      <rect x="18" y="10" width="22" height="15" rx="1.5" fill="#fff"/><rect x="18" y="10" width="22" height="4" rx="1.5" fill="#6C5CE7"/>
+      <path d="M4 31.5h40v2.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" fill="#1B1B3A"/>
+      <circle cx="8.5" cy="33.6" r="1.5" fill="#3DBE6B"/>
+    </symbol>
+
+    <!-- ===== Інформатика · 4 клас ===== -->
+    <symbol id="w-info" viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="20" fill="#2D9CDB" stroke="#1B6FA8" stroke-width="2.5"/>
+      <circle cx="24" cy="14" r="3.4" fill="#fff"/>
+      <path d="M24 21.5v14" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-message" viewBox="0 0 48 48">
+      <path d="M8 7h32a4 4 0 0 1 4 4v19a4 4 0 0 1-4 4H22l-9 8v-8H8a4 4 0 0 1-4-4V11a4 4 0 0 1 4-4z" fill="#3DBE6B" stroke="#23914A" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M12 16.5h24M12 24h16" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-algorithm" viewBox="0 0 48 48">
+      <path d="M24 10v4M24 23v4M24 37v3" stroke="#514F72" stroke-width="2.2"/>
+      <rect x="14" y="2" width="20" height="8" rx="4" fill="#3DBE6B" stroke="#23914A" stroke-width="1.8"/>
+      <rect x="12" y="14" width="24" height="9" rx="1.5" fill="#2D9CDB" stroke="#1B6FA8" stroke-width="1.8"/>
+      <path d="M24 27l11 5-11 5-11-5z" fill="#FFC93C" stroke="#E0A800" stroke-width="1.8" stroke-linejoin="round"/>
+      <rect x="14" y="40" width="20" height="7" rx="3.5" fill="#FF6B4A" stroke="#C9452A" stroke-width="1.8"/>
+    </symbol>
+    <symbol id="w-command" viewBox="0 0 48 48">
+      <path d="M3 14h8l3 3h6l3-3h22v20H23l-3 3h-6l-3-3H3z" fill="#2D9CDB" stroke="#1B6FA8" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M11 24h18m-6-6l6 6-6 6" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="37" cy="24" r="3" fill="#FFC93C"/>
+    </symbol>
+    <symbol id="w-robot" viewBox="0 0 48 48">
+      <path d="M24 4v5" stroke="#514F72" stroke-width="2.2"/><circle cx="24" cy="4" r="2.6" fill="#FF6B4A"/>
+      <path d="M13 35H6M35 35h7" stroke="#514F72" stroke-width="3.2" stroke-linecap="round"/>
+      <rect x="10" y="9" width="28" height="20" rx="5" fill="#C9C7D9" stroke="#514F72" stroke-width="2"/>
+      <circle cx="18" cy="18.5" r="3.6" fill="#2D9CDB"/><circle cx="30" cy="18.5" r="3.6" fill="#2D9CDB"/>
+      <path d="M19 24.5h10" stroke="#514F72" stroke-width="2.2" stroke-linecap="round"/>
+      <rect x="13" y="31" width="22" height="14" rx="3" fill="#16A3A0" stroke="#0E7C7A" stroke-width="2"/>
+      <circle cx="24" cy="38" r="2.6" fill="#FFC93C"/>
+    </symbol>
+    <symbol id="w-program" viewBox="0 0 48 48">
+      <rect x="3" y="6" width="42" height="36" rx="3" fill="#1B1B3A"/>
+      <path d="M3 9a3 3 0 0 1 3-3h36a3 3 0 0 1 3 3v4H3z" fill="#514F72"/>
+      <circle cx="8" cy="9.5" r="1.5" fill="#FF6B4A"/><circle cx="12.5" cy="9.5" r="1.5" fill="#FFC93C"/><circle cx="17" cy="9.5" r="1.5" fill="#3DBE6B"/>
+      <path d="M15 21l-6 6 6 6M33 21l6 6-6 6" fill="none" stroke="#3DBE6B" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M27 19l-6 16" stroke="#FFC93C" stroke-width="2.8" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-browser" viewBox="0 0 48 48">
+      <rect x="3" y="6" width="42" height="36" rx="3" fill="#fff" stroke="#514F72" stroke-width="2"/>
+      <path d="M3 15h42" stroke="#514F72" stroke-width="2"/>
+      <rect x="14" y="8.5" width="27" height="4" rx="2" fill="#E4E1F5"/>
+      <circle cx="8.5" cy="10.5" r="1.7" fill="#FF6B4A"/>
+      <circle cx="24" cy="28.5" r="10" fill="#2D9CDB" stroke="#1B6FA8" stroke-width="2"/>
+      <path d="M14 28.5h20M24 18.5c-5 5-5 15 0 20M24 18.5c5 5 5 15 0 20" fill="none" stroke="#BDE6FF" stroke-width="1.7"/>
+    </symbol>
+    <symbol id="w-website" viewBox="0 0 48 48">
+      <rect x="5" y="3" width="38" height="42" rx="3" fill="#fff" stroke="#514F72" stroke-width="2"/>
+      <path d="M5 6a3 3 0 0 1 3-3h32a3 3 0 0 1 3 3v6H5z" fill="#6C5CE7"/>
+      <path d="M9 7.5h11" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+      <rect x="9" y="16" width="14" height="12" rx="1.5" fill="#FFC93C"/>
+      <path d="M27 18h12M27 23h12M27 28h8M9 34h30M9 39.5h22" stroke="#C9C7D9" stroke-width="2.6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-password" viewBox="0 0 48 48">
+      <path d="M15 21v-7a9 9 0 0 1 18 0v7" fill="none" stroke="#6E6C8A" stroke-width="4.2"/>
+      <rect x="7" y="20" width="34" height="25" rx="4" fill="#FFC93C" stroke="#E0A800" stroke-width="2"/>
+      <circle cx="15.5" cy="32.5" r="2.8" fill="#8A6200"/><circle cx="24" cy="32.5" r="2.8" fill="#8A6200"/><circle cx="32.5" cy="32.5" r="2.8" fill="#8A6200"/>
+    </symbol>
+    <symbol id="w-email" viewBox="0 0 48 48">
+      <rect x="3" y="9" width="38" height="28" rx="3" fill="#fff" stroke="#514F72" stroke-width="2"/>
+      <path d="M4 11l18 14 18-14" fill="none" stroke="#514F72" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="37" cy="36" r="9" fill="#FF6B4A" stroke="#C9452A" stroke-width="1.8"/>
+      <circle cx="37" cy="36" r="2.6" fill="none" stroke="#fff" stroke-width="1.9"/>
+      <path d="M39.6 34v2.8a1.7 1.7 0 0 0 3.4 0V36a6 6 0 1 0-2.6 5" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- ===== Інформатика · 5 клас ===== -->
+    <symbol id="w-cpu" viewBox="0 0 48 48">
+      <path d="M16 3v7M24 3v7M32 3v7M16 38v7M24 38v7M32 38v7M3 16h7M3 24h7M3 32h7M38 16h7M38 24h7M38 32h7" stroke="#E0A800" stroke-width="2.6" stroke-linecap="round"/>
+      <rect x="9" y="9" width="30" height="30" rx="3" fill="#3A3A58" stroke="#1B1B3A" stroke-width="2"/>
+      <rect x="16" y="16" width="16" height="16" rx="2" fill="#C9C7D9"/>
+      <circle cx="13.5" cy="13.5" r="1.6" fill="#FFC93C"/>
+    </symbol>
+    <symbol id="w-ram" viewBox="0 0 48 48">
+      <rect x="3" y="13" width="42" height="20" rx="2" fill="#3DBE6B" stroke="#23914A" stroke-width="2"/>
+      <rect x="6.5" y="17" width="7" height="9" rx="1" fill="#1B1B3A"/><rect x="16" y="17" width="7" height="9" rx="1" fill="#1B1B3A"/>
+      <rect x="25.5" y="17" width="7" height="9" rx="1" fill="#1B1B3A"/><rect x="35" y="17" width="7" height="9" rx="1" fill="#1B1B3A"/>
+      <path d="M5 35.5h17M26 35.5h17" stroke="#E0A800" stroke-width="3.4" stroke-dasharray="1.6 1.2"/>
+    </symbol>
+    <symbol id="w-hdd" viewBox="0 0 48 48">
+      <rect x="6" y="3" width="36" height="42" rx="4" fill="#C9C7D9" stroke="#514F72" stroke-width="2"/>
+      <circle cx="24" cy="20" r="13" fill="#E4E1F5" stroke="#6E6C8A" stroke-width="2"/>
+      <circle cx="24" cy="20" r="6" fill="none" stroke="#C9C7D9" stroke-width="1.5"/>
+      <circle cx="24" cy="20" r="2.6" fill="#6E6C8A"/>
+      <path d="M36 38L26.5 22.5" stroke="#1B1B3A" stroke-width="3" stroke-linecap="round"/><circle cx="36" cy="38" r="3.2" fill="#1B1B3A"/>
+      <circle cx="10" cy="7" r="1.4" fill="#6E6C8A"/><circle cx="38" cy="7" r="1.4" fill="#6E6C8A"/><circle cx="10" cy="41" r="1.4" fill="#6E6C8A"/>
+    </symbol>
+    <symbol id="w-network" viewBox="0 0 48 48">
+      <path d="M24 24L10 10M24 24l14-14M24 24L10 38M24 24l14 14" stroke="#514F72" stroke-width="2.6"/>
+      <rect x="3" y="4" width="14" height="10" rx="1.5" fill="#2D9CDB" stroke="#1B6FA8" stroke-width="1.8"/>
+      <rect x="31" y="4" width="14" height="10" rx="1.5" fill="#2D9CDB" stroke="#1B6FA8" stroke-width="1.8"/>
+      <rect x="3" y="34" width="14" height="10" rx="1.5" fill="#2D9CDB" stroke="#1B6FA8" stroke-width="1.8"/>
+      <rect x="31" y="34" width="14" height="10" rx="1.5" fill="#2D9CDB" stroke="#1B6FA8" stroke-width="1.8"/>
+      <circle cx="24" cy="24" r="6.5" fill="#6C5CE7" stroke="#4B3DBF" stroke-width="2"/>
+    </symbol>
+    <symbol id="w-router" viewBox="0 0 48 48">
+      <path d="M12 23V8M36 23V8" stroke="#514F72" stroke-width="3" stroke-linecap="round"/>
+      <path d="M16.5 10.5a10.5 10.5 0 0 1 15 0M20 14.5a5.5 5.5 0 0 1 8 0" fill="none" stroke="#2D9CDB" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M10 38l-2 4.5M38 38l2 4.5" stroke="#514F72" stroke-width="2.6" stroke-linecap="round"/>
+      <rect x="4" y="22" width="40" height="17" rx="4" fill="#fff" stroke="#514F72" stroke-width="2"/>
+      <path d="M11 30.5h0M17 30.5h0M23 30.5h0" stroke="#3DBE6B" stroke-width="3.6" stroke-linecap="round"/>
+      <path d="M30 30.5h8" stroke="#C9C7D9" stroke-width="2.6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-server" viewBox="0 0 48 48">
+      <g><rect x="8" y="3" width="32" height="12" rx="2" fill="#3A3A58" stroke="#1B1B3A" stroke-width="2"/><circle cx="13.5" cy="9" r="1.9" fill="#3DBE6B"/><path d="M20 9h15" stroke="#6E6C8A" stroke-width="2.2" stroke-linecap="round"/></g>
+      <g transform="translate(0 13)"><rect x="8" y="3" width="32" height="12" rx="2" fill="#3A3A58" stroke="#1B1B3A" stroke-width="2"/><circle cx="13.5" cy="9" r="1.9" fill="#FFC93C"/><path d="M20 9h15" stroke="#6E6C8A" stroke-width="2.2" stroke-linecap="round"/></g>
+      <g transform="translate(0 26)"><rect x="8" y="3" width="32" height="12" rx="2" fill="#3A3A58" stroke="#1B1B3A" stroke-width="2"/><circle cx="13.5" cy="9" r="1.9" fill="#3DBE6B"/><path d="M20 9h15" stroke="#6E6C8A" stroke-width="2.2" stroke-linecap="round"/></g>
+      <path d="M12 42v4M36 42v4" stroke="#514F72" stroke-width="2.6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-cloud" viewBox="0 0 48 48">
+      <path d="M13 37a9 9 0 0 1-1.2-17.9A12.5 12.5 0 0 1 35.5 16.5 8.8 8.8 0 0 1 36 37z" fill="#BDE6FF" stroke="#2D9CDB" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M24 33V21m-5.5 5.5L24 21l5.5 5.5" fill="none" stroke="#1B6FA8" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="w-virus" viewBox="0 0 48 48">
+      <path d="M24 3v7M24 38v7M3 24h7M38 24h7M9 9l5 5M34 34l5 5M39 9l-5 5M14 34l-5 5" stroke="#23914A" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="24" cy="3.5" r="2.4" fill="#23914A"/><circle cx="24" cy="44.5" r="2.4" fill="#23914A"/><circle cx="3.5" cy="24" r="2.4" fill="#23914A"/><circle cx="44.5" cy="24" r="2.4" fill="#23914A"/>
+      <circle cx="24" cy="24" r="14" fill="#7ED957" stroke="#23914A" stroke-width="2.5"/>
+      <circle cx="31" cy="31" r="2.2" fill="#23914A" opacity=".45"/><circle cx="16" cy="30" r="1.6" fill="#23914A" opacity=".45"/>
+      <circle cx="19" cy="22.5" r="2.3" fill="#1B1B3A"/><circle cx="29" cy="22.5" r="2.3" fill="#1B1B3A"/>
+      <path d="M15.5 17.5l5 2.2M32.5 17.5l-5 2.2" stroke="#1B1B3A" stroke-width="2" stroke-linecap="round"/>
+      <path d="M19 30q5-3.5 10 0" fill="none" stroke="#1B1B3A" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-antivirus" viewBox="0 0 48 48">
+      <path d="M24 3l17 6v13c0 11-7.5 18.5-17 23C14.5 40.5 7 33 7 22V9z" fill="#16A3A0" stroke="#0E7C7A" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M24 7.5v33C16.5 36.5 11 30.5 11 22V11.8z" fill="#fff" opacity=".18"/>
+      <path d="M15.5 24l6 6 11-12" fill="none" stroke="#fff" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="w-slides" viewBox="0 0 48 48">
+      <path d="M24 34v10M24 34l-9 10M24 34l9 10" stroke="#6E6C8A" stroke-width="2.6" stroke-linecap="round"/>
+      <rect x="4" y="5" width="40" height="29" rx="2" fill="#fff" stroke="#514F72" stroke-width="2"/>
+      <rect x="2" y="3" width="44" height="4.5" rx="2.2" fill="#514F72"/>
+      <rect x="10" y="21" width="6.5" height="9" fill="#FF6B4A"/><rect x="20" y="15" width="6.5" height="15" fill="#FFC93C"/><rect x="30" y="10.5" width="6.5" height="19.5" fill="#16A3A0"/>
+      <path d="M8 30h32" stroke="#514F72" stroke-width="1.8"/>
+    </symbol>
+
+    <!-- ===== English · 2 клас ===== -->
+    <symbol id="w-cat" viewBox="0 0 48 48">
+      <path d="M9 21L8 4l11 9M39 21l1-17-11 9" fill="#FF9F43" stroke="#C9452A" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M11 15l-.5-6.5 5.5 4.5M37 15l.5-6.5-5.5 4.5" fill="#FFB3C7"/>
+      <ellipse cx="24" cy="28" rx="17" ry="15" fill="#FF9F43" stroke="#C9452A" stroke-width="2"/>
+      <ellipse cx="18" cy="26" rx="2.4" ry="3.3" fill="#1B1B3A"/><ellipse cx="30" cy="26" rx="2.4" ry="3.3" fill="#1B1B3A"/>
+      <path d="M22 31h4l-2 2.6z" fill="#FF5D9E"/>
+      <path d="M24 33.5q-2.5 3-5 1M24 33.5q2.5 3 5 1" fill="none" stroke="#1B1B3A" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M3 30l10 1M3 35l10-1.5M45 30l-10 1M45 35l-10-1.5" stroke="#1B1B3A" stroke-width="1.3" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-dog" viewBox="0 0 48 48">
+      <ellipse cx="24" cy="25" rx="14" ry="16" fill="#E0B07A" stroke="#9A6B3A" stroke-width="2"/>
+      <path d="M13 11C5 11 3 24 6 32c3 1.5 6-1.5 7.5-6zM35 11c8 0 10 13 7 21-3 1.5-6-1.5-7.5-6z" fill="#9A6B3A" stroke="#6E4520" stroke-width="2" stroke-linejoin="round"/>
+      <ellipse cx="24" cy="32.5" rx="8.5" ry="6.5" fill="#F6E2C8"/>
+      <circle cx="18.5" cy="22" r="2.5" fill="#1B1B3A"/><circle cx="29.5" cy="22" r="2.5" fill="#1B1B3A"/>
+      <ellipse cx="24" cy="29.5" rx="3.6" ry="2.6" fill="#1B1B3A"/>
+      <path d="M24 32v2.5M20.5 35q3.5 2.5 7 0" fill="none" stroke="#1B1B3A" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M22.5 36.5h3v2.5a1.5 1.5 0 0 1-3 0z" fill="#FF5D9E"/>
+    </symbol>
+    <symbol id="w-apple" viewBox="0 0 48 48">
+      <path d="M24 14c0-4 1-7 3-9" fill="none" stroke="#6E4520" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M26 9.5c3-4 8-4.5 10.5-2.5-2 4-7.5 4.5-10.5 2.5z" fill="#3DBE6B" stroke="#23914A" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M24 14.5c-4-3-14-3-16 6-2 9 4 22 10 22 3 0 4-1.5 6-1.5s3 1.5 6 1.5c6 0 12-13 10-22-2-9-12-9-16-6z" fill="#E8453C" stroke="#B5281F" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M13 22c1-3 3-4.5 5.5-4.5" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity=".6"/>
+    </symbol>
+    <symbol id="w-ball" viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="19" fill="#FF6B4A" stroke="#C9452A" stroke-width="2"/>
+      <path d="M6 19q18 9 36 0M6.5 30q17.5 8 35 0" fill="none" stroke="#FFC93C" stroke-width="4.2"/>
+      <circle cx="16.5" cy="13.5" r="3" fill="#fff" opacity=".6"/>
+    </symbol>
+    <symbol id="w-book" viewBox="0 0 48 48">
+      <path d="M4 38c7-2 15-2 20 2 5-4 13-4 20-2v4c-7-2-15-2-20 2-5-4-13-4-20-2z" fill="#2D9CDB" stroke="#1B6FA8" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M24 12C19 8 11 8 4 10v28c7-2 15-2 20 2 5-4 13-4 20-2V10c-7-2-15-2-20 2z" fill="#fff" stroke="#1B6FA8" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M24 12v28" stroke="#1B6FA8" stroke-width="2"/>
+      <path d="M8 17c4-1 8-1 12 1M8 23c4-1 8-1 12 1M8 29c4-1 8-1 12 1M28 18c4-2 8-2 12-1M28 24c4-2 8-2 12-1M28 30c4-2 8-2 12-1" fill="none" stroke="#C9C7D9" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-pen" viewBox="0 0 48 48">
+      <g transform="rotate(45 24 24)">
+        <rect x="20" y="2" width="8" height="32" rx="2" fill="#2D9CDB" stroke="#1B6FA8" stroke-width="2"/>
+        <rect x="27" y="5" width="3.2" height="13" rx="1.6" fill="#C9C7D9" stroke="#6E6C8A" stroke-width="1"/>
+        <path d="M20 34h8l-4 10z" fill="#E4E1F5" stroke="#1B6FA8" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M22.8 40.5h2.4L24 44z" fill="#1B1B3A"/>
+      </g>
+    </symbol>
+    <symbol id="w-sun" viewBox="0 0 48 48">
+      <path d="M24 2v6M24 40v6M2 24h6M40 24h6M8.5 8.5l4.2 4.2M35.3 35.3l4.2 4.2M39.5 8.5l-4.2 4.2M12.7 35.3l-4.2 4.2" stroke="#FF9F43" stroke-width="3.6" stroke-linecap="round"/>
+      <circle cx="24" cy="24" r="12" fill="#FFC93C" stroke="#E0A800" stroke-width="2.5"/>
+      <circle cx="20" cy="22" r="1.7" fill="#8A6200"/><circle cx="28" cy="22" r="1.7" fill="#8A6200"/>
+      <path d="M19.5 27q4.5 4 9 0" fill="none" stroke="#8A6200" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-fish" viewBox="0 0 48 48">
+      <path d="M18 14q5-7 11 0" fill="#FF6B4A" stroke="#C9452A" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M33 24l12-10v20z" fill="#FF6B4A" stroke="#C9452A" stroke-width="2" stroke-linejoin="round"/>
+      <ellipse cx="20" cy="24" rx="16" ry="11" fill="#FF9F43" stroke="#C9452A" stroke-width="2"/>
+      <path d="M21 14q-3 10 0 20M28 15.5q-3 8.5 0 17" fill="none" stroke="#C9452A" stroke-width="2" opacity=".45"/>
+      <circle cx="11" cy="21.5" r="2.5" fill="#1B1B3A"/>
+      <path d="M5 26.5q2 1.5 4 0" fill="none" stroke="#1B1B3A" stroke-width="1.6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-bird" viewBox="0 0 48 48">
+      <path d="M10 27L2 20v13z" fill="#1B6FA8"/>
+      <path d="M20 41v5M27 41v5" stroke="#E0A800" stroke-width="2.2" stroke-linecap="round"/>
+      <circle cx="24" cy="26" r="15" fill="#2D9CDB" stroke="#1B6FA8" stroke-width="2"/>
+      <ellipse cx="27" cy="32.5" rx="9" ry="6" fill="#BDE6FF"/>
+      <path d="M13 26q6 8.5 14 2-6-6.5-14-2z" fill="#1B6FA8"/>
+      <circle cx="30" cy="20" r="2.6" fill="#1B1B3A"/>
+      <path d="M38 21l7.5 2.2-7.5 3.3z" fill="#FFC93C" stroke="#E0A800" stroke-width="1.5" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="w-car" viewBox="0 0 48 48">
+      <path d="M3 33v-7a3 3 0 0 1 3-3h5l6.5-8.5h14L39 23h3a3 3 0 0 1 3 3v7z" fill="#E8453C" stroke="#B5281F" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M14.5 23l4.5-6h5.5v6zM27.5 17H32l5 6h-9.5z" fill="#BDE6FF" stroke="#B5281F" stroke-width="1.5" stroke-linejoin="round"/>
+      <rect x="40.5" y="25.5" width="3.5" height="3" rx="1" fill="#FFF3B0"/>
+      <circle cx="13" cy="34" r="5.2" fill="#1B1B3A"/><circle cx="13" cy="34" r="2" fill="#C9C7D9"/>
+      <circle cx="35" cy="34" r="5.2" fill="#1B1B3A"/><circle cx="35" cy="34" r="2" fill="#C9C7D9"/>
+    </symbol>
+
+    <!-- ===== English · 3 клас ===== -->
+    <symbol id="w-house" viewBox="0 0 48 48">
+      <rect x="32" y="7" width="5.5" height="10" fill="#9A6B3A"/>
+      <rect x="9" y="21" width="30" height="23" fill="#FFC93C" stroke="#E0A800" stroke-width="2"/>
+      <path d="M3 23L24 5l21 18z" fill="#E8453C" stroke="#B5281F" stroke-width="2" stroke-linejoin="round"/>
+      <rect x="20" y="30" width="8" height="14" rx="1" fill="#9A6B3A"/>
+      <rect x="12" y="26" width="6" height="6" fill="#BDE6FF" stroke="#1B6FA8" stroke-width="1.5"/>
+      <rect x="30" y="26" width="6" height="6" fill="#BDE6FF" stroke="#1B6FA8" stroke-width="1.5"/>
+    </symbol>
+    <symbol id="w-tree" viewBox="0 0 48 48">
+      <rect x="20" y="28" width="8" height="17" rx="2" fill="#9A6B3A" stroke="#6E4520" stroke-width="2"/>
+      <path d="M24 3c-7 0-12 5-11 11-5 2-7 8-4 13 3 4 9 5 15 3 6 2 12 1 15-3 3-5 1-11-4-13 1-6-4-11-11-11z" fill="#3DBE6B" stroke="#23914A" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="17" cy="17" r="2.2" fill="#E8453C"/><circle cx="29" cy="12" r="2.2" fill="#E8453C"/><circle cx="31" cy="23" r="2.2" fill="#E8453C"/>
+    </symbol>
+    <symbol id="w-flower" viewBox="0 0 48 48">
+      <path d="M24 26v19" stroke="#23914A" stroke-width="3" stroke-linecap="round"/>
+      <path d="M24 39c-3-5-9-6-12-4 3 4 8 6 12 4zM24 35c3-5 9-6 12-4-3 4-8 6-12 4z" fill="#3DBE6B" stroke="#23914A" stroke-width="1.5" stroke-linejoin="round"/>
+      <g fill="#FF5D9E" stroke="#D63A7C" stroke-width="1.5">
+        <circle cx="24" cy="8.5" r="5.5"/><circle cx="31.6" cy="14" r="5.5"/><circle cx="28.7" cy="23" r="5.5"/><circle cx="19.3" cy="23" r="5.5"/><circle cx="16.4" cy="14" r="5.5"/>
+      </g>
+      <circle cx="24" cy="16" r="4.6" fill="#FFC93C" stroke="#E0A800" stroke-width="1.5"/>
+    </symbol>
+    <symbol id="w-banana" viewBox="0 0 48 48">
+      <path d="M9 12c-2 14 8 28 26 28 4 0 8-2 9-4-14 2-26-6-30-24z" fill="#FFC93C" stroke="#E0A800" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M12.5 17c4 11 14 18 26 19" fill="none" stroke="#E0A800" stroke-width="1.6"/>
+      <path d="M9 12.5L7.5 8l4 1.5" fill="none" stroke="#6E4520" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M44 36l1.5 1" stroke="#6E4520" stroke-width="2.6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-cake" viewBox="0 0 48 48">
+      <rect x="22" y="10" width="4" height="11" rx="1" fill="#2D9CDB"/>
+      <path d="M24 2.5c3 3 3 5.5 0 7.5-3-2-3-4.5 0-7.5z" fill="#FF9F43"/>
+      <rect x="7" y="22" width="34" height="20" rx="3" fill="#FFB3C7" stroke="#D63A7C" stroke-width="2"/>
+      <path d="M7 28c3 0 3 4 6 4s3-4 6-4 3 4 6 4 3-4 6-4 3 4 6 4 3-4 4-4v-3a3 3 0 0 0-3-3H10a3 3 0 0 0-3 3z" fill="#fff" stroke="#D63A7C" stroke-width="2" stroke-linejoin="round"/>
+      <rect x="3" y="41" width="42" height="4" rx="2" fill="#C9C7D9"/>
+      <circle cx="15" cy="36" r="1.6" fill="#E8453C"/><circle cx="24" cy="37" r="1.6" fill="#E8453C"/><circle cx="33" cy="36" r="1.6" fill="#E8453C"/>
+    </symbol>
+    <symbol id="w-bike" viewBox="0 0 48 48">
+      <circle cx="11" cy="32" r="8.5" fill="none" stroke="#1B1B3A" stroke-width="3"/>
+      <circle cx="37" cy="32" r="8.5" fill="none" stroke="#1B1B3A" stroke-width="3"/>
+      <path d="M11 32l8-14h14l4 14M19 18l7 14H11M33 18l-7 14" fill="none" stroke="#16A3A0" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M19 18l-1.5-4M14 14h7" stroke="#1B1B3A" stroke-width="3" stroke-linecap="round"/>
+      <path d="M33 18l-2-6.5h5" fill="none" stroke="#1B1B3A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="w-chair" viewBox="0 0 48 48">
+      <path d="M12 28v16M36 28v16M16.5 28v10M31.5 28v10" stroke="#9A6B3A" stroke-width="3.2" stroke-linecap="round"/>
+      <rect x="12" y="4" width="24" height="19" rx="3" fill="#FF9F43" stroke="#C9452A" stroke-width="2"/>
+      <path d="M18 8.5v10M24 8.5v10M30 8.5v10" stroke="#C9452A" stroke-width="1.8" opacity=".5"/>
+      <rect x="9" y="22" width="30" height="6.5" rx="2" fill="#FF9F43" stroke="#C9452A" stroke-width="2"/>
+    </symbol>
+    <symbol id="w-clock" viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="19" fill="#fff" stroke="#6C5CE7" stroke-width="4"/>
+      <path d="M24 8.5v4M24 35.5v4M8.5 24h4M35.5 24h4" stroke="#1B1B3A" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M24 24V14M24 24l7 4" stroke="#1B1B3A" stroke-width="2.6" stroke-linecap="round"/>
+      <circle cx="24" cy="24" r="2.2" fill="#FF6B4A"/>
+    </symbol>
+    <symbol id="w-hat" viewBox="0 0 48 48">
+      <ellipse cx="24" cy="33" rx="21" ry="7.5" fill="#FFC93C" stroke="#E0A800" stroke-width="2"/>
+      <path d="M12 32c0-10 4-18 12-18s12 8 12 18c-6 3-18 3-24 0z" fill="#FFC93C" stroke="#E0A800" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M12.4 26.5c6 2.5 17.2 2.5 23.2 0l.4 4.2c-6 2.6-18 2.6-24 0z" fill="#FF5D9E"/>
+    </symbol>
+    <symbol id="w-duck" viewBox="0 0 48 48">
+      <path d="M2 43q4-3 8 0t8 0 8 0 8 0 8 0 4 0" fill="none" stroke="#2D9CDB" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M7 29l-4-6 8 2.5z" fill="#FFC93C" stroke="#E0A800" stroke-width="1.6" stroke-linejoin="round"/>
+      <ellipse cx="22" cy="32" rx="17" ry="9.5" fill="#FFC93C" stroke="#E0A800" stroke-width="2"/>
+      <circle cx="31" cy="17" r="9" fill="#FFC93C" stroke="#E0A800" stroke-width="2"/>
+      <path d="M12 30q8 8.5 16 0-8-4-16 0z" fill="#E0A800" opacity=".55"/>
+      <path d="M39 16.5l7 1.5-7 3.5z" fill="#FF9F43" stroke="#C9452A" stroke-width="1.5" stroke-linejoin="round"/>
+      <circle cx="33" cy="14.5" r="1.9" fill="#1B1B3A"/>
+    </symbol>
+
+    <!-- ===== English · 4 клас ===== -->
+    <symbol id="w-elephant" viewBox="0 0 48 48">
+      <path d="M20 28c0 8 1 14 6 15 3 0 4-2 3-4-2 0-3-2-3-5v-6z" fill="#B7B4CC" stroke="#6E6A88" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="10" cy="19" r="9" fill="#9A97B0" stroke="#6E6A88" stroke-width="2"/><circle cx="10" cy="19" r="5" fill="#FFB3C7"/>
+      <circle cx="38" cy="19" r="9" fill="#9A97B0" stroke="#6E6A88" stroke-width="2"/><circle cx="38" cy="19" r="5" fill="#FFB3C7"/>
+      <ellipse cx="24" cy="20" rx="12" ry="13" fill="#B7B4CC" stroke="#6E6A88" stroke-width="2"/>
+      <path d="M20 27.5c0 6 1 11 3 13M26 27.5v4" fill="none" stroke="#B7B4CC" stroke-width="3"/>
+      <circle cx="19" cy="18" r="2.1" fill="#1B1B3A"/><circle cx="29" cy="18" r="2.1" fill="#1B1B3A"/>
+      <path d="M17 28q-2.5 4 .5 6.5M31 28q2.5 4-.5 6.5" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-rabbit" viewBox="0 0 48 48">
+      <ellipse cx="17" cy="12" rx="4.6" ry="10.5" fill="#fff" stroke="#9A97B0" stroke-width="2"/><ellipse cx="17" cy="12" rx="2" ry="7" fill="#FFB3C7"/>
+      <ellipse cx="31" cy="12" rx="4.6" ry="10.5" fill="#fff" stroke="#9A97B0" stroke-width="2"/><ellipse cx="31" cy="12" rx="2" ry="7" fill="#FFB3C7"/>
+      <ellipse cx="24" cy="31" rx="14.5" ry="12.5" fill="#fff" stroke="#9A97B0" stroke-width="2"/>
+      <circle cx="18.5" cy="28.5" r="2.2" fill="#1B1B3A"/><circle cx="29.5" cy="28.5" r="2.2" fill="#1B1B3A"/>
+      <circle cx="14.5" cy="34" r="2.4" fill="#FFB3C7"/><circle cx="33.5" cy="34" r="2.4" fill="#FFB3C7"/>
+      <path d="M22 32h4l-2 2.4z" fill="#FF5D9E"/>
+      <rect x="22" y="35.5" width="4" height="4" rx="1" fill="#fff" stroke="#9A97B0" stroke-width="1.2"/>
+    </symbol>
+    <symbol id="w-umbrella" viewBox="0 0 48 48">
+      <path d="M24 22v17a4 4 0 0 1-8 0" fill="none" stroke="#514F72" stroke-width="3" stroke-linecap="round"/>
+      <path d="M3 24a21 19 0 0 1 42 0c-3.5-3-7-3-10.5 0-3.5-3-7-3-10.5 0-3.5-3-7-3-10.5 0-3.5-3-7-3-10.5 0z" fill="#6C5CE7" stroke="#4B3DBF" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M24 5c-6 6-7 13-6.5 19M24 5c6 6 7 13 6.5 19" fill="none" stroke="#4B3DBF" stroke-width="1.6"/>
+      <path d="M24 3v2.5" stroke="#514F72" stroke-width="2.6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-pencil" viewBox="0 0 48 48">
+      <g transform="rotate(45 24 24)">
+        <rect x="19" y="2" width="10" height="7" rx="2" fill="#FF8FAB" stroke="#D63A7C" stroke-width="2"/>
+        <rect x="19" y="8" width="10" height="26" fill="#FFC93C" stroke="#E0A800" stroke-width="2"/>
+        <path d="M22.3 11v23M25.7 11v23" stroke="#E0A800" stroke-width="1.2"/>
+        <rect x="19" y="8" width="10" height="3.5" fill="#C9C7D9" stroke="#6E6C8A" stroke-width="1"/>
+        <path d="M19 34h10l-5 11z" fill="#F6E2C8" stroke="#C99A1E" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M22.6 42h2.8L24 45z" fill="#1B1B3A"/>
+      </g>
+    </symbol>
+    <symbol id="w-schoolbag" viewBox="0 0 48 48">
+      <path d="M16 12V9a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v3" fill="none" stroke="#514F72" stroke-width="3"/>
+      <rect x="8" y="12" width="32" height="32" rx="7" fill="#16A3A0" stroke="#0E7C7A" stroke-width="2"/>
+      <path d="M8 22h32" stroke="#0E7C7A" stroke-width="2"/>
+      <rect x="14" y="28" width="20" height="11" rx="3" fill="#0E7C7A"/>
+      <rect x="21" y="19.5" width="6" height="5" rx="1" fill="#FFC93C" stroke="#E0A800" stroke-width="1"/>
+    </symbol>
+    <symbol id="w-lemon" viewBox="0 0 48 48">
+      <path d="M30 11c2-5 7-6.5 10.5-5-1 4.5-6.5 6.5-10.5 5z" fill="#3DBE6B" stroke="#23914A" stroke-width="1.5" stroke-linejoin="round"/>
+      <g transform="rotate(-25 24 26)">
+        <ellipse cx="24" cy="26" rx="18" ry="13" fill="#FFE14D" stroke="#E0A800" stroke-width="2"/>
+        <path d="M6 26l-2.5 0M42 26l2.5 0" stroke="#E0A800" stroke-width="3" stroke-linecap="round"/>
+        <path d="M12 24c1-4 4-7 8-8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity=".75"/>
+      </g>
+    </symbol>
+    <symbol id="w-carrot" viewBox="0 0 48 48">
+      <path d="M33 13c0-5 2-9 6-10-1 4-2 7-4 10M35 15c4-2 8-2 11 0-3 2-7 3-10 2M33 12c-2-4-2-8 0-10 2 3 2 6 1 9" fill="#3DBE6B" stroke="#23914A" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M28 12c4-1 8.5 3 8 7.5L9 43.5c-2 1-4.5-1-3.5-3z" fill="#FF8C1A" stroke="#C9452A" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M22 22l3 3M17 28.5l3 2M12.5 34.5l2 2" stroke="#C9452A" stroke-width="1.7" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-kite" viewBox="0 0 48 48">
+      <path d="M26 35c-3 4 2 6-1 10" fill="none" stroke="#514F72" stroke-width="1.6"/>
+      <path d="M26 39l-3.5-2v4zM26 39l3.5-2v4z" fill="#2D9CDB"/>
+      <path d="M26 3l14 15-14 17-14-17z" fill="#FF5D9E" stroke="#D63A7C" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M26 4.5L13.4 18H26zM26 18h12.6L26 33.5z" fill="#FFC93C"/>
+      <path d="M26 3v32M12 18h28" stroke="#D63A7C" stroke-width="1.6"/>
+    </symbol>
+    <symbol id="w-butterfly" viewBox="0 0 48 48">
+      <path d="M24 21C18 7 4 5 5 15.5c1 6 8 8 19 5.5zM24 21C30 7 44 5 43 15.5c-1 6-8 8-19 5.5z" fill="#6C5CE7" stroke="#4B3DBF" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M24 23c-10 0-16 6-13 12.5 3 5 10 2 13-12.5zM24 23c10 0 16 6 13 12.5-3 5-10 2-13-12.5z" fill="#FF5D9E" stroke="#D63A7C" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="12.5" cy="14.5" r="2.6" fill="#FFC93C"/><circle cx="35.5" cy="14.5" r="2.6" fill="#FFC93C"/>
+      <path d="M23 14q-3-6-6.5-7.5M25 14q3-6 6.5-7.5" fill="none" stroke="#1B1B3A" stroke-width="1.7" stroke-linecap="round"/>
+      <rect x="22" y="13" width="4" height="25" rx="2" fill="#1B1B3A"/>
+    </symbol>
+    <symbol id="w-cheese" viewBox="0 0 48 48">
+      <path d="M4 22L34 8l10 14z" fill="#FFE68A" stroke="#E0A800" stroke-width="2" stroke-linejoin="round"/>
+      <rect x="4" y="22" width="40" height="18" fill="#FFC93C" stroke="#E0A800" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="13" cy="30" r="3.2" fill="#E0A800"/><circle cx="26" cy="34.5" r="2.3" fill="#E0A800"/><circle cx="35.5" cy="28.5" r="2.9" fill="#E0A800"/>
+      <ellipse cx="27" cy="16.5" rx="2.6" ry="1.4" fill="#E0A800"/>
+    </symbol>
+
+    <!-- ===== English · 5 клас ===== -->
+    <symbol id="w-strawberry" viewBox="0 0 48 48">
+      <path d="M24 12.5c-10-2-19 4-17 13 2 9 10 17 17 19 7-2 15-10 17-19 2-9-7-15-17-13z" fill="#E8453C" stroke="#B5281F" stroke-width="2" stroke-linejoin="round"/>
+      <g fill="#FFE14D"><ellipse cx="17" cy="21" rx="1.1" ry="1.6"/><ellipse cx="24" cy="20" rx="1.1" ry="1.6"/><ellipse cx="31" cy="21" rx="1.1" ry="1.6"/><ellipse cx="13.5" cy="28" rx="1.1" ry="1.6"/><ellipse cx="20.5" cy="27" rx="1.1" ry="1.6"/><ellipse cx="27.5" cy="27" rx="1.1" ry="1.6"/><ellipse cx="34.5" cy="28" rx="1.1" ry="1.6"/><ellipse cx="18" cy="34" rx="1.1" ry="1.6"/><ellipse cx="24.5" cy="34" rx="1.1" ry="1.6"/><ellipse cx="31" cy="34" rx="1.1" ry="1.6"/><ellipse cx="24" cy="40" rx="1.1" ry="1.6"/></g>
+      <path d="M13.5 12.5c3-1.5 6.5-1.5 10.5.5 4-2 7.5-2 10.5-.5-2 3.5-6.5 4.5-10.5 3-4 1.5-8.5.5-10.5-3z" fill="#3DBE6B" stroke="#23914A" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M24 13V5.5" stroke="#23914A" stroke-width="2.6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-sandwich" viewBox="0 0 48 48">
+      <rect x="5" y="33" width="38" height="9" rx="3" fill="#F2C27A" stroke="#C9893A" stroke-width="2"/>
+      <rect x="6" y="28" width="36" height="5.5" rx="2" fill="#E8453C"/>
+      <path d="M6 25h36l-3 5-4-3H6z" fill="#FFC93C"/>
+      <path d="M4 22c3-3 5 2 8-1s5 2 8-1 5 2 8-1 5 2 8-1 4 2 8 0v4H4z" fill="#3DBE6B" stroke="#23914A" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M5 19c0-7 6-11 19-11s19 4 19 11v2H5z" fill="#F2C27A" stroke="#C9893A" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M15 13.5h1M24 12h1M32 14h1" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".7"/>
+    </symbol>
+    <symbol id="w-guitar" viewBox="0 0 48 48">
+      <g transform="rotate(38 24 24)">
+        <rect x="22" y="3" width="4" height="28" fill="#9A6B3A"/>
+        <rect x="20.5" y="0" width="7" height="6" rx="1.5" fill="#6E4520"/>
+        <path d="M24 21c-5 0-9 2-9 6 0 3 2 4 2 5-3 1-5 4-5 7 0 5 6 6.5 12 6.5s12-1.5 12-6.5c0-3-2-6-5-7 0-1 2-2 2-5 0-4-4-6-9-6z" fill="#FF9F43" stroke="#C9452A" stroke-width="2" stroke-linejoin="round"/>
+        <circle cx="24" cy="34" r="3.6" fill="#6E4520"/>
+        <rect x="20" y="40" width="8" height="2.2" rx="1" fill="#6E4520"/>
+        <path d="M23.2 3v38M24.8 3v38" stroke="#fff" stroke-width=".7"/>
+      </g>
+    </symbol>
+    <symbol id="w-camera" viewBox="0 0 48 48">
+      <path d="M15 13l3-5h12l3 5" fill="#514F72" stroke="#1B1B3A" stroke-width="2" stroke-linejoin="round"/>
+      <rect x="8" y="9.5" width="5" height="3.5" rx="1" fill="#FF6B4A"/>
+      <rect x="4" y="13" width="40" height="27" rx="4" fill="#3A3A58" stroke="#1B1B3A" stroke-width="2"/>
+      <circle cx="24" cy="26.5" r="9.5" fill="#C9C7D9" stroke="#1B1B3A" stroke-width="2"/>
+      <circle cx="24" cy="26.5" r="5.5" fill="#2D9CDB"/><circle cx="22" cy="24.5" r="1.9" fill="#fff"/>
+      <rect x="35" y="17" width="5" height="3" rx="1" fill="#FFC93C"/>
+    </symbol>
+    <symbol id="w-helicopter" viewBox="0 0 48 48">
+      <path d="M5 7h34" stroke="#514F72" stroke-width="3" stroke-linecap="round"/><path d="M22 7v7" stroke="#514F72" stroke-width="3"/>
+      <path d="M30 24h12l2-7" fill="none" stroke="#FF6B4A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="44" cy="16" r="3.2" fill="none" stroke="#514F72" stroke-width="1.6"/>
+      <path d="M12 36v5M30 36v5M5 41h31" stroke="#514F72" stroke-width="2.6" stroke-linecap="round"/>
+      <ellipse cx="21" cy="25" rx="14" ry="11" fill="#FF6B4A" stroke="#C9452A" stroke-width="2"/>
+      <path d="M9.5 22.5a12 9 0 0 1 10.5-8.4v10.4H9.6z" fill="#BDE6FF" stroke="#C9452A" stroke-width="1.6" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="w-mountain" viewBox="0 0 48 48">
+      <circle cx="40" cy="9" r="4.5" fill="#FFC93C"/>
+      <path d="M2 42L17 13l9 13 6-9 14 25z" fill="#9A97B0" stroke="#6E6A88" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M17 13l-5 9.5 3-1.2 2 2 3-3 2.4 1z" fill="#fff"/>
+      <path d="M32 17l-3.6 5.6 2-.6 1.6 1.6 2-1.6 1.6.6z" fill="#fff"/>
+      <path d="M2 42.5h44" stroke="#3DBE6B" stroke-width="3.2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-rainbow" viewBox="0 0 48 48">
+      <g fill="none" stroke-width="3.8">
+        <path d="M4 38a20 20 0 0 1 40 0" stroke="#E8453C"/>
+        <path d="M7.6 38a16.4 16.4 0 0 1 32.8 0" stroke="#FF9F43"/>
+        <path d="M11.2 38a12.8 12.8 0 0 1 25.6 0" stroke="#FFC93C"/>
+        <path d="M14.8 38a9.2 9.2 0 0 1 18.4 0" stroke="#3DBE6B"/>
+        <path d="M18.4 38a5.6 5.6 0 0 1 11.2 0" stroke="#2D9CDB"/>
+      </g>
+      <ellipse cx="8" cy="39" rx="7" ry="4.6" fill="#fff" stroke="#C9C7D9" stroke-width="1.6"/>
+      <ellipse cx="40" cy="39" rx="7" ry="4.6" fill="#fff" stroke="#C9C7D9" stroke-width="1.6"/>
+    </symbol>
+    <symbol id="w-dolphin" viewBox="0 0 48 48">
+      <path d="M3 43q4-3 8 0t8 0 8 0 8 0 8 0" fill="none" stroke="#16A3A0" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M21 15l6.5-7.5 2 9z" fill="#2D9CDB" stroke="#1B6FA8" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M39.5 24l6-6.5-.5 8 2.5 4-8-1.5z" fill="#2D9CDB" stroke="#1B6FA8" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M6 27l-4 1.5 4 1.5z" fill="#2D9CDB" stroke="#1B6FA8" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M5 28C10 16 26 12 38 20c3 2 5 5 6 8-3-1-6-1-8 0-6 3-15 5-23 4-3 0-6-1-8-4z" fill="#2D9CDB" stroke="#1B6FA8" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M9 29.5c6 3 15 3 22 0" fill="none" stroke="#BDE6FF" stroke-width="3" stroke-linecap="round"/>
+      <path d="M18 31l-3 6.5 7.5-4.5z" fill="#1B6FA8"/>
+      <circle cx="11" cy="24" r="1.7" fill="#1B1B3A"/>
+    </symbol>
+    <symbol id="w-scissors" viewBox="0 0 48 48">
+      <path d="M16 33L35 5M32 33L13 5" stroke="#9A97B0" stroke-width="4.2" stroke-linecap="round"/>
+      <path d="M16 33L35 5" stroke="#fff" stroke-width="1.2" stroke-linecap="round" opacity=".6"/>
+      <circle cx="24" cy="19.5" r="2.3" fill="#514F72"/>
+      <circle cx="13" cy="38" r="6" fill="none" stroke="#FF6B4A" stroke-width="3.6"/>
+      <circle cx="35" cy="38" r="6" fill="none" stroke="#FF6B4A" stroke-width="3.6"/>
+    </symbol>
+    <symbol id="w-island" viewBox="0 0 48 48">
+      <rect x="2" y="36" width="44" height="10" rx="3" fill="#2D9CDB"/>
+      <path d="M8 37.5c4-8 28-8 32 0z" fill="#F3D9A4" stroke="#C9A35E" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M24 33c0-8 2-15 6-20" fill="none" stroke="#9A6B3A" stroke-width="3.6" stroke-linecap="round"/>
+      <path d="M30 13c-4-4-11-4-14 0 4-1 8 0 14 0zM30 13c2-5 8-7 13-5-4 1-8 2-13 5zM30 13c5-1 11 2 12 7-4-3-8-4-12-7zM30 13c-2 4-7 7-11 7 3-3 6-5 11-7z" fill="#3DBE6B" stroke="#23914A" stroke-width="1.6" stroke-linejoin="round"/>
+      <circle cx="29" cy="15.5" r="1.9" fill="#6E4520"/><circle cx="31.5" cy="15" r="1.9" fill="#6E4520"/>
+      <path d="M6 42h6M20 43.5h6M34 42h6" stroke="#BDE6FF" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<script>
+/* ================= Налаштування ================= */
+// ?boost — складніші рівні для сильніших класів: швидший м'ячик, вужча дощечка, більше міцних цеглинок
+const BOOST = new URLSearchParams(location.search).has('boost');
+
+// Поле в логічних пікселях; на екрані канва масштабується під вікно
+const W = 600, H = 660;
+const COLS = 10, CW = 58, RH = 26, BW = 54, BH = 22, LEFT = 10, TOP = 56;   // сітка цеглинок: колонка, ряд, цеглинка, відступи
+const R = 9;                 // радіус м'ячика
+const PY = H - 46, PH = 16;  // верх дощечки й її товщина
+const TURBO = 1.45;          // у турбо м'ячик у стільки разів швидший, а бали за цеглинки подвоюються
+const AUTO_LAUNCH = 3;       // м'ячик сам злітає з дощечки через стільки секунд
+const STARS_AT = [1, 3, 5];  // зірки за гру: скільки слів спіймано
+
+// time — тривалість, с; rows — ряди цеглинок; strong — частка міцних (2 удари), tough — дуже міцних (3 удари);
+// speed — швидкість м'ячика, пікс./с, на початку й наприкінці гри; paddle — ширина дощечки; fall — швидкість падіння слова;
+// depth — скільки рядів цеглинок під блоком ? на початку, spread — на скільки рядів вище він може опинитися
+const LEVELS = BOOST ? {
+  easy: { name:'Легко',    ico:'🟢', info:'2 хв · швидкий м\'ячик',   time:120, rows:6, strong:.2,  tough:0,   speed:[380, 440], paddle:115, fall:150, depth:2, spread:0 },
+  mid:  { name:'Середньо', ico:'🟡', info:'2,5 хв · міцні цеглинки', time:150, rows:7, strong:.35, tough:.05, speed:[440, 520], paddle:98,  fall:180, depth:2, spread:1 },
+  hard: { name:'Важко',    ico:'🔴', info:'3 хв · вузька дощечка',  time:180, rows:8, strong:.45, tough:.15, speed:[500, 590], paddle:82,  fall:210, depth:3, spread:1 },
+} : {
+  easy: { name:'Легко',    ico:'🟢', info:'2 хв · повільний м\'ячик', time:120, rows:5, strong:0,   tough:0,   speed:[330, 390], paddle:140, fall:105, depth:1, spread:0 },
+  mid:  { name:'Середньо', ico:'🟡', info:'2,5 хв · міцні цеглинки', time:150, rows:6, strong:.2,  tough:0,   speed:[380, 440], paddle:120, fall:130, depth:2, spread:0 },
+  hard: { name:'Важко',    ico:'🔴', info:'3 хв · швидкий м\'ячик',   time:180, rows:7, strong:.35, tough:0,   speed:[430, 500], paddle:100, fall:160, depth:2, spread:1 },
+};
+const GRADES = [2, 3, 4, 5];
+const MODES = { info:'💻 Інформатика', en:'🔤 English' };
+
+// Слова колекції. Малюнок кожного — <symbol id="w-…"> у розмітці.
+// Інформатика: [малюнок, термін, пояснення]; English: [малюнок, слово, переклад].
+// У кожному класі 10 слів. Перші чотири відкриті одразу, решта — за бали зі скарбнички (WORD_AT, за порядком у списку)
+const WORD_AT = [0, 0, 0, 0, 60, 140, 240, 360, 500, 660];
+const WORDS = {
+  info: {
+    2: [
+      ['computer',   "комп'ютер",      "Пристрій, який допомагає людині працювати з інформацією: зберігати, опрацьовувати й передавати її."],
+      ['monitor',    'монітор',        'Екран, на якому комп\'ютер показує тексти, малюнки й відео.'],
+      ['keyboard',   'клавіатура',     'Пристрій для введення літер, цифр і команд у комп\'ютер.'],
+      ['mouse',      'миша',           'Пристрій, яким керують вказівником на екрані.'],
+      ['sysunit',    'системний блок', 'Корпус, у якому сховані головні частини комп\'ютера: процесор, пам\'ять, диск.'],
+      ['speakers',   'колонки',        'Пристрій для виведення звуку з комп\'ютера.'],
+      ['headphones', 'навушники',      'Виводять звук так, щоб його чув лише ти.'],
+      ['printer',    'принтер',        'Друкує тексти й малюнки з комп\'ютера на папері.'],
+      ['tablet',     'планшет',        'Плаский комп\'ютер, яким керують дотиками до екрана.'],
+      ['phone',      'смартфон',       'Мобільний телефон, який уміє багато того, що й комп\'ютер.'],
+    ],
+    3: [
+      ['laptop',  'ноутбук',      'Переносний комп\'ютер: екран, клавіатура й акумулятор в одному корпусі.'],
+      ['mic',     'мікрофон',     'Пристрій для введення звуку, наприклад голосу.'],
+      ['webcam',  'вебкамера',    'Камера, що передає відео в комп\'ютер, наприклад для відеодзвінка.'],
+      ['scanner', 'сканер',       'Переносить зображення з паперу в комп\'ютер.'],
+      ['flash',   'флешка',       'Маленький пристрій, на якому зберігають і переносять файли.'],
+      ['pointer', 'вказівник',    'Стрілочка на екрані, яка рухається разом із мишею.'],
+      ['icon',    'значок',       'Маленький малюнок на екрані, що позначає програму, файл або папку.'],
+      ['file',    'файл',         'Документ, малюнок, пісня чи програма, збережені в комп\'ютері під своїм ім\'ям.'],
+      ['folder',  'папка',        'Місце для файлів та інших папок, щоб у комп\'ютері був порядок.'],
+      ['desktop', 'робочий стіл', 'Головний екран комп\'ютера зі значками й панеллю завдань.'],
+    ],
+    4: [
+      ['info',      'інформація',       'Відомості про навколишній світ, які ми отримуємо через органи чуття.'],
+      ['message',   'повідомлення',     'Інформація, яку передають іншим: словами, малюнком, звуком чи жестом.'],
+      ['algorithm', 'алгоритм',         'Послідовність команд, виконавши які, отримаємо результат.'],
+      ['command',   'команда',          'Вказівка виконавцю зробити одну дію.'],
+      ['robot',     'виконавець',       'Той, хто виконує команди: людина, робот чи програма.'],
+      ['program',   'програма',         'Алгоритм, записаний мовою, зрозумілою комп\'ютеру.'],
+      ['browser',   'браузер',          'Програма для перегляду сайтів в Інтернеті.'],
+      ['website',   'сайт',             'Вебсторінки в Інтернеті, об\'єднані однією темою й адресою.'],
+      ['password',  'пароль',           'Таємне слово для входу, яке знаєш лише ти. Нікому його не кажи!'],
+      ['email',     'електронна пошта', 'Служба, через яку надсилають листи в Інтернеті.'],
+    ],
+    5: [
+      ['cpu',       'процесор',           '«Мозок» комп\'ютера: виконує команди програм.'],
+      ['ram',       "оперативна пам'ять", 'Зберігає те, з чим комп\'ютер працює зараз. Після вимкнення все з неї зникає.'],
+      ['hdd',       'жорсткий диск',      'Зберігає файли й програми навіть тоді, коли комп\'ютер вимкнено.'],
+      ['network',   'мережа',             'Комп\'ютери, з\'єднані між собою, щоб обмінюватися даними.'],
+      ['router',    'маршрутизатор',      'Пристрій, що з\'єднує комп\'ютери в мережу й підключає їх до Інтернету.'],
+      ['server',    'сервер',             'Потужний комп\'ютер, що зберігає сайти й файли та віддає їх іншим комп\'ютерам.'],
+      ['cloud',     'хмарне сховище',     'Місце в Інтернеті для файлів, які можна відкрити з будь-якого пристрою.'],
+      ['virus',     'вірус',              'Шкідлива програма, яка псує файли або заважає працювати.'],
+      ['antivirus', 'антивірус',          'Програма, що знаходить і знешкоджує комп\'ютерні віруси.'],
+      ['slides',    'презентація',        'Набір слайдів із текстом і малюнками для виступу.'],
+    ],
+  },
+  en: {
+    2: [['cat','cat','кіт'], ['dog','dog','собака'], ['apple','apple','яблуко'], ['ball','ball',"м'яч"], ['book','book','книжка'],
+        ['pen','pen','ручка'], ['sun','sun','сонце'], ['fish','fish','риба'], ['bird','bird','пташка'], ['car','car','машина']],
+    3: [['house','house','будинок'], ['tree','tree','дерево'], ['flower','flower','квітка'], ['banana','banana','банан'], ['cake','cake','торт'],
+        ['bike','bike','велосипед'], ['chair','chair','стілець'], ['clock','clock','годинник'], ['hat','hat','капелюх'], ['duck','duck','качка']],
+    4: [['elephant','elephant','слон'], ['rabbit','rabbit','кролик'], ['umbrella','umbrella','парасолька'], ['pencil','pencil','олівець'], ['schoolbag','schoolbag','рюкзак'],
+        ['lemon','lemon','лимон'], ['carrot','carrot','морква'], ['kite','kite','повітряний змій'], ['butterfly','butterfly','метелик'], ['cheese','cheese','сир']],
+    5: [['strawberry','strawberry','полуниця'], ['sandwich','sandwich','бутерброд'], ['guitar','guitar','гітара'], ['camera','camera','фотоапарат'], ['helicopter','helicopter','гелікоптер'],
+        ['mountain','mountain','гора'], ['rainbow','rainbow','веселка'], ['dolphin','dolphin','дельфін'], ['scissors','scissors','ножиці'], ['island','island','острів']],
+  },
+};
+// Усі слова одним списком: { id, mode, grade, w — слово, d — пояснення (інформатика), t — переклад (English), at — з якої суми балів відкрите }
+const ITEMS = Object.entries(WORDS).flatMap(([mode, grades])=>Object.entries(grades).flatMap(([grade, list])=>list.map(([id, w, x], i)=>
+  ({ id, mode, grade:+grade, w, [mode === 'en' ? 't' : 'd']:x, at:WORD_AT[i] }))));
+const ITEM = Object.fromEntries(ITEMS.map(it=>[it.id, it]));
+const STORE_KEY = BOOST ? 'word-bricks-kids-boost-v1' : 'word-bricks-kids-v1';
+
+/* ================= Збереження ================= */
+// Гравці на цьому пристрої: { current, players:{ ім'я: профіль } }.
+// Профіль: best — рекорди (ключ «режим-клас-рівень»); total — скарбничка; rounds — ігор; col — колекція { info:{ id:скільки разів }, en:{…} };
+// mode, grade — останній вибір; field, brick, paddle — вибір у майстерні
+const newProfile = ()=>({ best:{}, total:0, rounds:0, col:{ info:{}, en:{} }, mode:'info', grade:2 });
+let db = { current:null, players:{} };
+try{
+  const s = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+  if(s && s.players) db = s;
+}catch(e){}
+let player = null;
+let store = newProfile();
+function save(){ if(player) try{ localStorage.setItem(STORE_KEY, JSON.stringify(db)); }catch(e){} }
+function loadPlayer(name){
+  const p = Object.assign(newProfile(), db.players[name] || {});
+  p.col = Object.assign({ info:{}, en:{} }, p.col);
+  store = db.players[name] = p;
+  player = db.current = name;
+  save();
+}
+
+/* ================= Звук ================= */
+// Звук увімкнено за замовчуванням. Учням перемикача не показуємо: вчитель вимикає звук адресою ?zvuk=tykho
+// (вмикає назад ?zvuk=klas) або Ctrl+Alt+Z — як в інших іграх. Режим запам'ятовується на цьому пристрої
+const SOUND_KEY = 'word-bricks-kids-sound';
+let soundOn = true;
+try{ soundOn = localStorage.getItem(SOUND_KEY) !== 'off'; }catch(e){}
+function setSound(on){
+  soundOn = on;
+  try{ localStorage.setItem(SOUND_KEY, on ? 'on' : 'off'); }catch(e){}
+  showToast(on ? '🔊 Звук увімкнено' : '🔇 Без звуку');
+  updateTeacherNote();
+  if(on) fanfare();
+  else if('speechSynthesis' in window) speechSynthesis.cancel();
+}
+
+let actx = null;
+function audio(){
+  actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+  if(actx.state === 'suspended') actx.resume();
+  return actx;
+}
+function tone(freq, dur=0.12, type='sine', vol=0.07, delay=0){
+  if(!soundOn) return;
+  try{
+    const a = audio(), t = a.currentTime + delay;
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(a.destination);
+    o.start(t); o.stop(t + dur + 0.02);
+  }catch(e){}
+}
+function noise(dur, vol, delay = 0, freq = 2500){
+  if(!soundOn) return;
+  try{
+    const a = audio(), t = a.currentTime + delay, n = Math.ceil(a.sampleRate * dur);
+    const buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0);
+    for(let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    const src = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+    src.buffer = buf; f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = .7;
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(f).connect(g).connect(a.destination);
+    src.start(t);
+  }catch(e){}
+}
+const fanfare = ()=>[523,659,784,1047].forEach((f,i)=>tone(f, .22, 'triangle', .08, i*.12));
+const popper = (delay = 0)=>{ noise(.06, .5, delay, 1200); tone(90, .12, 'sine', .1, delay); noise(.6, .12, delay + .05, 4500); };
+function bigFanfare(delay = 0){
+  let t = delay;
+  for(const [f, d] of [[392,.12],[523,.12],[659,.12],[784,.3],[659,.14],[784,.7]]){
+    tone(f, d + .05, 'sawtooth', .035, t); tone(f * 2, d, 'triangle', .03, t); t += d;
+  }
+  [523, 659].forEach(f=>tone(f, .7, 'triangle', .03, t - .7));
+}
+const sparkle = (delay = 0)=>[1319, 1568, 2093, 2637].forEach((f, i)=>tone(f, .18, 'sine', .04, delay + i * .07));
+const SFX = {
+  paddle:  ()=>tone(330, .07, 'triangle', .07),
+  wall:    ()=>tone(240, .04, 'triangle', .03),
+  brick:   row=>tone(520 + (row % 8) * 70, .07, 'square', .03),
+  dent:    ()=>{ tone(1200, .05, 'square', .025); tone(1800, .07, 'sine', .03, .02); },
+  stone:   ()=>tone(170, .07, 'square', .035),   // м'ячик відскочив від блока ?
+  lost:    ()=>[440, 330, 220].forEach((f, i)=>tone(f, .14, 'triangle', .06, i * .1)),
+  reveal:  ()=>[660, 880, 1100, 1320].forEach((f, i)=>tone(f, .1, 'sine', .06, i * .06)),
+  caught:  ()=>{ [784, 988, 1175, 1568].forEach((f, i)=>tone(f, .16, 'triangle', .07, i * .08)); sparkle(.3); },
+  escape:  ()=>[392, 294].forEach((f, i)=>tone(f, .28, 'sawtooth', .03, i * .22)),
+  newWall: ()=>[523, 659, 784, 1047, 1319].forEach((f, i)=>tone(f, .12, 'triangle', .06, i * .07)),
+  turboOn: ()=>[400, 600, 900].forEach((f, i)=>tone(f, .1, 'sawtooth', .03, i * .06)),
+  turboOff:()=>[700, 500, 350].forEach((f, i)=>tone(f, .1, 'triangle', .04, i * .06)),
+  beep:    ()=>tone(440, .15, 'square', .05),
+  go:      ()=>tone(880, .35, 'square', .05),
+};
+// Англійські слова гра вимовляє, якщо в системі є англійський голос
+let enVoice = null;
+function findVoice(){ try{ enVoice = speechSynthesis.getVoices().find(v=>/^en[-_]/i.test(v.lang)) || null; }catch(e){} }
+if('speechSynthesis' in window){ findVoice(); speechSynthesis.addEventListener?.('voiceschanged', findVoice); }
+function speak(text){
+  if(!soundOn || !enVoice) return;
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.voice = enVoice; u.lang = enVoice.lang; u.rate = .85;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ================= Допоміжне ================= */
+const $ = id=>document.getElementById(id);
+const icon = (id, cls = '')=>`<svg class="${cls}" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-${id}"/></svg>`;
+const pic = id=>`<svg viewBox="0 0 48 48" aria-hidden="true"><use href="#w-${id}"/></svg>`;
+const fmtTime = s=>`${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+const plural = (n, [one, few, many])=>{ const a = n % 10, b = n % 100; return a === 1 && b !== 11 ? one : a >= 2 && a <= 4 && (b < 12 || b > 14) ? few : many; };
+const pick = list=>list[Math.floor(Math.random() * list.length)];
+const shuffle = list=>{ const a = list.slice(); for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const clamp = (v, a, b)=>Math.max(a, Math.min(b, v));
+const esc = s=>String(s).replace(/[&<>"']/g, c=>({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+const starsText = n=>'★'.repeat(n) + `<i>${'★'.repeat(3 - n)}</i>`;
+const pointsWord = n=>`${n} ${plural(n, ['бал', 'бали', 'балів'])}`;
+const timesWord = n=>`${n} ${plural(n, ['раз', 'рази', 'разів'])}`;
+const minutes = s=>(s / 60).toLocaleString('uk', { maximumFractionDigits:1 }) + ' хв';
+// Повторюваний «випадковий» ряд для малюнків тла: щоразу однаковий
+const rng = seed=>()=>((seed = (seed * 16807) % 2147483647) / 2147483647);
+
+let toastTimer = 0;
+function showToast(text){
+  const t = $('toast');
+  t.textContent = text;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+function confetti(n = 70){
+  const colors = ['#6C5CE7','#16A3A0','#FF6B4A','#FFC93C','#FF5D9E','#2D9CDB'];
+  for(let i=0;i<n;i++){
+    const d = document.createElement('div');
+    d.className = 'confetti';
+    d.style.left = Math.random()*100 + 'vw';
+    d.style.background = colors[i % colors.length];
+    d.style.animationDuration = (2 + Math.random()*2) + 's';
+    d.style.animationDelay = Math.random()*0.6 + 's';
+    document.body.appendChild(d);
+    setTimeout(()=>d.remove(), 5000);
+  }
+}
+
+/* ================= Малювання на канві ================= */
+function rrect(c, x, y, w, h, r){
+  r = Math.min(r, w / 2, h / 2);
+  c.beginPath();
+  c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r);
+  c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath();
+}
+// Світліший (k > 0) чи темніший (k < 0) відтінок кольору #RRGGBB
+function shade(hex, k){
+  const n = parseInt(hex.slice(1), 16), f = v=>Math.round(k < 0 ? v * (1 + k) : v + (255 - v) * k);
+  return `rgb(${f(n >> 16)},${f(n >> 8 & 255)},${f(n & 255)})`;
+}
+const FONT = "'Nunito Sans', sans-serif";
+// Малюнок предмета з колекції як картинка для канви (з того самого <symbol>)
+const picCache = {};
+function picImg(id){
+  if(!picCache[id]){
+    const sym = document.getElementById('w-' + id);
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="144" height="144">${sym.innerHTML}</svg>`;
+    picCache[id] = new Image();
+    picCache[id].src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }
+  return picCache[id];
+}
+
+/* ================= Майстерня: поле, цеглинки, дощечка ================= */
+// Бали з усіх ігор складаються в скарбничку (store.total). За неї відкриваються нові слова (WORD_AT) і оформлення:
+// at — скільки балів потрібно. Гра на «Легко» дає приблизно 60–120 балів
+// Поле: draw малює тло на всю канву W×H; dark — темне тло (написи на ньому білі)
+const FIELDS = [
+  { id:'board', name:'Шкільна дошка', ico:'🟩', at:0, dark:true, draw:c=>{
+    c.fillStyle = '#2F5D50'; c.fillRect(0, 0, W, H);
+    const r = rng(7);
+    c.fillStyle = 'rgba(255,255,255,.03)';
+    for(let i = 0; i < 6; i++){ c.beginPath(); c.ellipse(r() * W, 260 + r() * (H - 300), 80 + r() * 90, 14 + r() * 16, (r() - .5) * .5, 0, 7); c.fill(); }
+    c.fillStyle = 'rgba(255,255,255,.08)'; c.font = `700 34px ${FONT}`; c.textAlign = 'center';
+    ['А Б В', '2 + 3 = 5', 'a b c', '0 1 1 0 1'].forEach((s, i)=>c.fillText(s, 140 + (i % 2) * 320, 330 + i * 70));
+  } },
+  { id:'paper', name:'Зошит', ico:'📓', at:100, dark:false, draw:c=>{
+    c.fillStyle = '#FDFCF7'; c.fillRect(0, 0, W, H);
+    c.strokeStyle = 'rgba(45,156,219,.22)'; c.lineWidth = 1;
+    c.beginPath();
+    for(let x = 0; x <= W; x += 24){ c.moveTo(x + .5, 0); c.lineTo(x + .5, H); }
+    for(let y = 0; y <= H; y += 24){ c.moveTo(0, y + .5); c.lineTo(W, y + .5); }
+    c.stroke();
+    c.strokeStyle = 'rgba(232,69,60,.45)'; c.lineWidth = 2; c.beginPath(); c.moveTo(W - 36, 0); c.lineTo(W - 36, H); c.stroke();
+  } },
+  { id:'sky', name:'Небо', ico:'☁️', at:250, dark:false, draw:c=>{
+    const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#4FB3EE'); g.addColorStop(1, '#D9F2FF');
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    c.fillStyle = 'rgba(255,255,255,.8)';
+    for(const [x, y, s] of [[70, 330, 26], [400, 420, 34], [210, 560, 22], [480, 250, 20], [40, 640, 18]]){
+      c.beginPath(); c.arc(x, y, s, 0, 7); c.arc(x + s, y - s * .5, s * .9, 0, 7); c.arc(x + s * 2, y, s * .85, 0, 7); c.fill();
+      c.fillRect(x, y - 2, s * 2, s * .8);
+    }
+  } },
+  { id:'sea', name:'Море', ico:'🐠', at:450, dark:true, draw:c=>{
+    const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#1FA2B8'); g.addColorStop(1, '#0B3D5C');
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    c.fillStyle = 'rgba(255,255,255,.05)';
+    for(let i = 0; i < 4; i++){ c.beginPath(); c.moveTo(60 + i * 150, 0); c.lineTo(120 + i * 150, 0); c.lineTo(20 + i * 170, H); c.lineTo(-40 + i * 170, H); c.fill(); }
+    const r = rng(11);
+    c.strokeStyle = 'rgba(255,255,255,.28)'; c.lineWidth = 2;
+    for(let i = 0; i < 26; i++){ c.beginPath(); c.arc(r() * W, 280 + r() * (H - 280), 3 + r() * 9, 0, 7); c.stroke(); }
+    c.strokeStyle = 'rgba(61,190,107,.5)'; c.lineWidth = 6; c.lineCap = 'round';
+    for(const x of [30, 52, 560, 580]){ c.beginPath(); c.moveTo(x, H); c.quadraticCurveTo(x - 16, H - 50, x + 4, H - 90); c.stroke(); }
+  } },
+  { id:'code', name:'Код', ico:'💻', at:700, dark:true, draw:c=>{
+    c.fillStyle = '#10131F'; c.fillRect(0, 0, W, H);
+    const r = rng(3);
+    c.font = '600 16px Consolas, monospace'; c.textAlign = 'center';
+    for(let x = 12; x < W; x += 22) for(let y = 20; y < H; y += 26){
+      c.fillStyle = `rgba(61,220,132,${(.05 + r() * .14).toFixed(2)})`;
+      c.fillText(r() < .5 ? '0' : '1', x, y);
+    }
+  } },
+  { id:'space', name:'Космос', ico:'🚀', at:1000, dark:true, draw:c=>{
+    const g = c.createRadialGradient(W * .3, H * .3, 40, W * .5, H * .5, H);
+    g.addColorStop(0, '#3A2A6E'); g.addColorStop(1, '#120C2E');
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    const r = rng(5);
+    for(let i = 0; i < 140; i++){ c.fillStyle = `rgba(255,255,255,${(.3 + r() * .7).toFixed(2)})`; c.beginPath(); c.arc(r() * W, r() * H, .6 + r() * 1.4, 0, 7); c.fill(); }
+    c.fillStyle = '#FF9F43'; c.beginPath(); c.arc(505, 560, 42, 0, 7); c.fill();
+    c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 4; c.beginPath(); c.ellipse(505, 560, 72, 16, -.3, 0, 7); c.stroke();
+    c.fillStyle = '#7FE7FF'; c.beginPath(); c.arc(80, 430, 14, 0, 7); c.fill();
+  } },
+  { id:'candy', name:'Цукерки', ico:'🍭', at:1500, dark:false, draw:c=>{
+    c.fillStyle = '#FFE3EE'; c.fillRect(0, 0, W, H);
+    c.save(); c.rotate(-.5); c.fillStyle = 'rgba(255,255,255,.6)';
+    for(let x = -H; x < W + H; x += 56) c.fillRect(x, -H, 26, H * 3);
+    c.restore();
+    const r = rng(9), cols = ['#FF5D9E', '#FFC93C', '#16A3A0', '#6C5CE7'];
+    for(let i = 0; i < 40; i++){ c.fillStyle = cols[i % 4]; c.globalAlpha = .25; c.beginPath(); c.arc(r() * W, 290 + r() * (H - 290), 4 + r() * 4, 0, 7); c.fill(); }
+    c.globalAlpha = 1;
+  } },
+];
+
+// Цеглинки: draw(c, x, y, w, h, b), де b = { r, c — ряд і колонка, hp — скільки ударів лишилось, max — міцність, mode }
+const ROWC = ['#FF6B4A', '#FF9F43', '#FFC93C', '#3DBE6B', '#16A3A0', '#2D9CDB', '#6C5CE7', '#FF5D9E'];
+const KEYROWS = { info:['ЙЦУКЕНГШЩЗ', 'ФІВАПРОЛДЖ', 'ЯЧСМИТЬБЮЄ'], en:['QWERTYUIOP', 'ASDFGHJKL;', 'ZXCVBNM,./'] };
+function gloss(c, x, y, w, h){
+  c.fillStyle = 'rgba(255,255,255,.35)'; rrect(c, x + 3, y + 2, w - 6, h * .3, 3); c.fill();
+  c.fillStyle = 'rgba(0,0,0,.12)'; c.fillRect(x + 4, y + h - 4, w - 8, 2);
+}
+const BRICKS = [
+  { id:'color', name:'Кольорові', at:0, draw:(c, x, y, w, h, b)=>{
+    rrect(c, x, y, w, h, 5); c.fillStyle = ROWC[b.r % 8]; c.fill(); gloss(c, x, y, w, h);
+  } },
+  { id:'brick', name:'Цеглини', at:150, draw:(c, x, y, w, h, b)=>{
+    c.fillStyle = '#E9D8C4'; c.fillRect(x, y, w, h);
+    c.fillStyle = ['#C8553D', '#B5482F', '#D2694A'][(b.r + b.c) % 3];
+    const h2 = h / 2;
+    c.fillRect(x + 1, y + 1, w / 2 - 2, h2 - 2); c.fillRect(x + w / 2 + 1, y + 1, w / 2 - 2, h2 - 2);
+    c.fillRect(x + 1, y + h2 + 1, w / 4 - 2, h2 - 2); c.fillRect(x + w / 4 + 1, y + h2 + 1, w / 2 - 2, h2 - 2); c.fillRect(x + w * .75 + 1, y + h2 + 1, w / 4 - 2, h2 - 2);
+  } },
+  { id:'keys', name:'Клавіші', at:350, draw:(c, x, y, w, h, b)=>{
+    rrect(c, x, y, w, h, 5); c.fillStyle = '#B9B6CC'; c.fill();
+    rrect(c, x + 2, y + 1, w - 4, h - 5, 4); c.fillStyle = '#FFFFFF'; c.fill();
+    const row = KEYROWS[b.mode || 'info'][b.r % 3];
+    c.fillStyle = shade(ROWC[b.r % 8], -.2); c.font = `800 13px ${FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText(row[b.c % row.length], x + w / 2, y + h / 2 - 1.5);
+  } },
+  { id:'candy', name:'Смугасті', at:600, draw:(c, x, y, w, h, b)=>{
+    rrect(c, x, y, w, h, 6); c.fillStyle = ROWC[b.r % 8]; c.fill();
+    c.save(); c.clip(); c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 5;
+    c.beginPath(); for(let k = -h; k < w; k += 13){ c.moveTo(x + k, y + h); c.lineTo(x + k + h, y); } c.stroke();
+    c.restore(); gloss(c, x, y, w, h);
+  } },
+  { id:'gem', name:'Кристали', at:900, draw:(c, x, y, w, h, b)=>{
+    const col = ROWC[b.r % 8], g = c.createLinearGradient(x, y, x, y + h);
+    g.addColorStop(0, shade(col, .55)); g.addColorStop(1, shade(col, -.2));
+    c.beginPath(); c.moveTo(x + 7, y); c.lineTo(x + w - 7, y); c.lineTo(x + w, y + h / 2); c.lineTo(x + w - 7, y + h); c.lineTo(x + 7, y + h); c.lineTo(x, y + h / 2); c.closePath();
+    c.fillStyle = g; c.fill();
+    c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 1.2;
+    c.beginPath(); c.moveTo(x + 7, y); c.lineTo(x + 15, y + h / 2); c.lineTo(x + 7, y + h); c.moveTo(x + w - 7, y); c.lineTo(x + w - 15, y + h / 2); c.lineTo(x + w - 7, y + h);
+    c.moveTo(x + 15, y + h / 2); c.lineTo(x + w - 15, y + h / 2); c.stroke();
+  } },
+  { id:'pixel', name:'Пікселі', at:1300, draw:(c, x, y, w, h, b)=>{
+    const col = ROWC[b.r % 8], tones = [col, shade(col, .3), shade(col, -.18)], pw = w / 9, ph = h / 3;
+    for(let i = 0; i < 9; i++) for(let j = 0; j < 3; j++){
+      c.fillStyle = tones[(i * 2 + j + b.c) % 3];
+      c.fillRect(Math.floor(x + i * pw), Math.floor(y + j * ph), Math.ceil(pw), Math.ceil(ph));
+    }
+  } },
+  { id:'rainbow', name:'Веселка', at:1800, draw:(c, x, y, w, h, b)=>{
+    rrect(c, x, y, w, h, 5); c.fillStyle = `hsl(${(b.c * 36 + b.r * 14) % 360}, 82%, 60%)`; c.fill(); gloss(c, x, y, w, h);
+  } },
+];
+// Міцна цеглинка: темніша, з заклепками (скільки ще ударів понад один), після удару — з тріщиною
+function drawDamage(c, x, y, w, h, b){
+  if(b.max < 2) return;
+  if(b.hp > 1){
+    c.fillStyle = 'rgba(27,27,58,.22)'; rrect(c, x, y, w, h, 5); c.fill();
+    c.fillStyle = 'rgba(255,255,255,.9)';
+    for(let i = 0; i < b.hp - 1; i++){ c.beginPath(); c.arc(x + w - 8 - i * 8, y + h / 2, 2.6, 0, 7); c.fill(); }
+  }
+  if(b.hp < b.max){
+    c.strokeStyle = 'rgba(27,27,58,.65)'; c.lineWidth = 1.6;
+    c.beginPath(); c.moveTo(x + w * .55, y); c.lineTo(x + w * .44, y + h * .45); c.lineTo(x + w * .6, y + h * .62); c.lineTo(x + w * .5, y + h); c.stroke();
+  }
+}
+
+// Дощечки: draw(c, x, y, w, h, t), x — лівий край, t — час (для вогника ракети)
+function plainPad(c, x, y, w, h, fill){
+  rrect(c, x, y, w, h, h / 2); c.fillStyle = fill; c.fill();
+  c.lineWidth = 2.5; c.strokeStyle = '#fff'; c.stroke();
+  c.fillStyle = 'rgba(255,255,255,.4)'; rrect(c, x + h / 2, y + 3, w - h, h * .28, 2); c.fill();
+}
+const PADDLES = [
+  { id:'teal', name:'Бірюзова', at:0, draw:(c, x, y, w, h)=>plainPad(c, x, y, w, h, '#16A3A0') },
+  { id:'coral', name:'Коралова', at:0, draw:(c, x, y, w, h)=>plainPad(c, x, y, w, h, '#FF6B4A') },
+  { id:'pencil', name:'Олівець', at:120, draw:(c, x, y, w, h)=>{
+    rrect(c, x, y, 16, h, 6); c.fillStyle = '#FF8FAB'; c.fill();
+    c.fillStyle = '#C9C7D9'; c.fillRect(x + 12, y, 8, h);
+    c.fillStyle = '#FFC93C'; c.fillRect(x + 20, y, w - 38, h);
+    c.fillStyle = '#E0A800'; c.fillRect(x + 20, y + h / 3 - 1, w - 38, 2); c.fillRect(x + 20, y + h * 2 / 3 - 1, w - 38, 2);
+    c.fillStyle = '#F6E2C8'; c.beginPath(); c.moveTo(x + w - 18, y); c.lineTo(x + w, y + h / 2); c.lineTo(x + w - 18, y + h); c.fill();
+    c.fillStyle = '#1B1B3A'; c.beginPath(); c.moveTo(x + w - 7, y + h * .3); c.lineTo(x + w, y + h / 2); c.lineTo(x + w - 7, y + h * .7); c.fill();
+  } },
+  { id:'keyboard', name:'Клавіатура', at:300, draw:(c, x, y, w, h)=>{
+    rrect(c, x, y, w, h, 4); c.fillStyle = '#514F72'; c.fill(); c.lineWidth = 2; c.strokeStyle = '#fff'; c.stroke();
+    c.fillStyle = '#F6F5FB';
+    const n = Math.floor((w - 8) / 10);
+    for(let i = 0; i < n; i++){ c.fillRect(x + 5 + i * 10, y + 3, 7, 4); if(i > 1 && i < n - 2) c.fillRect(x + 5 + i * 10, y + 9, 7, 4); }
+  } },
+  { id:'rainbow', name:'Веселка', at:500, draw:(c, x, y, w, h)=>{
+    const g = c.createLinearGradient(x, 0, x + w, 0);
+    ['#E8453C', '#FF9F43', '#FFC93C', '#3DBE6B', '#2D9CDB', '#6C5CE7'].forEach((col, i)=>g.addColorStop(i / 5, col));
+    plainPad(c, x, y, w, h, g);
+  } },
+  { id:'rocket', name:'Ракета', at:800, draw:(c, x, y, w, h, t = 0)=>{
+    const f = 8 + Math.sin(t * 30) * 3;
+    c.fillStyle = '#FF9F43'; c.beginPath(); c.moveTo(x + 8, y + 3); c.lineTo(x + 8 - f, y + h / 2); c.lineTo(x + 8, y + h - 3); c.fill();
+    c.fillStyle = '#E8453C'; c.beginPath(); c.moveTo(x + 8, y - 4); c.lineTo(x + 22, y + 2); c.lineTo(x + 22, y + h - 2); c.lineTo(x + 8, y + h + 4); c.fill();
+    rrect(c, x + 8, y, w - 26, h, 5); c.fillStyle = '#F6F5FB'; c.fill(); c.lineWidth = 1.5; c.strokeStyle = '#9A97B0'; c.stroke();
+    c.fillStyle = '#E8453C'; c.beginPath(); c.moveTo(x + w - 19, y); c.quadraticCurveTo(x + w, y + 1, x + w, y + h / 2); c.quadraticCurveTo(x + w, y + h - 1, x + w - 19, y + h); c.fill();
+    c.fillStyle = '#2D9CDB'; c.beginPath(); c.arc(x + w - 30, y + h / 2, 4, 0, 7); c.fill();
+  } },
+  { id:'gold', name:'Золота', at:1200, draw:(c, x, y, w, h)=>{
+    const g = c.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, '#FFF0A8'); g.addColorStop(.5, '#FFC93C'); g.addColorStop(1, '#C99A1E');
+    rrect(c, x, y, w, h, h / 2); c.fillStyle = g; c.fill(); c.lineWidth = 2; c.strokeStyle = '#8A6200'; c.stroke();
+    c.fillStyle = '#fff'; c.font = `800 13px ${FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('★', x + w / 2, y + h / 2 + 1);
+  } },
+  { id:'neon', name:'Неон', at:1700, draw:(c, x, y, w, h)=>{
+    c.save(); c.shadowColor = '#7FE7FF'; c.shadowBlur = 14;
+    rrect(c, x, y, w, h, h / 2); c.fillStyle = '#1B1B3A'; c.fill(); c.lineWidth = 3; c.strokeStyle = '#7FE7FF'; c.stroke();
+    c.restore();
+    c.fillStyle = '#FF5D9E'; rrect(c, x + h, y + h / 2 - 1.5, w - 2 * h, 3, 1.5); c.fill();
+  } },
+];
+const SHOP = { field:FIELDS, brick:BRICKS, paddle:PADDLES };
+const SHOP_NAME = { field:'Поле', brick:'Цеглинки', paddle:'Дощечка' };
+const isOpen = (x, total = store.total)=>total >= x.at;
+const chosen = kind=>{ const list = SHOP[kind], x = list.find(x=>x.id === store[kind]); return x && isOpen(x) ? x : list[0]; };
+
+// Сцена: тло, цеглинки, блок ?, падаюче слово, дощечка й м'ячик. Спільна для гри й прев'ю в майстерні.
+// S = { field, brick, paddle, mode, grid, word, ball, px, pw, t, bg — готове тло (необов'язково) }
+function drawScene(c, S){
+  if(S.bg){ c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(S.bg, 0, 0); c.restore(); }
+  else S.field.draw(c);
+  const dark = S.field.dark, word = S.word;
+  // Під блоком ? підсвічено колонки, які треба розчистити
+  if(word && word.state === 'hidden'){
+    const top = word.y + RH, bottom = TOP + S.grid.length * RH;
+    if(bottom > top){
+      c.fillStyle = dark ? 'rgba(255,255,255,.07)' : 'rgba(108,92,231,.08)';
+      c.fillRect(word.x, top - 2, word.w, bottom - top);
+      c.save(); c.setLineDash([6, 6]); c.strokeStyle = 'rgba(255,201,60,.75)'; c.lineWidth = 1.5;
+      c.strokeRect(word.x - 1, top - 3, word.w + 2, bottom - top + 2); c.restore();
+    }
+  }
+  S.grid.forEach((row, r)=>row.forEach((b, col)=>{
+    if(!b) return;
+    const x = LEFT + col * CW + 2, y = TOP + r * RH + 2, info = { r, c:col, hp:b.hp, max:b.max, mode:S.mode };
+    S.brick.draw(c, x, y, BW, BH, info);
+    drawDamage(c, x, y, BW, BH, info);
+  }));
+  if(word && word.state === 'hidden') drawMystery(c, word, S.t);
+  if(word && word.state === 'falling') drawWord(c, word);
+  S.paddle.draw(c, S.px - S.pw / 2, PY, S.pw, PH, S.t);
+  const b = S.ball;
+  c.fillStyle = '#fff'; c.strokeStyle = '#1B1B3A'; c.lineWidth = 2;
+  c.beginPath(); c.arc(b.x, b.y, R, 0, 7); c.fill(); c.stroke();
+  c.fillStyle = 'rgba(108,92,231,.35)'; c.beginPath(); c.arc(b.x + 2.5, b.y + 2.5, R * .45, 0, 7); c.fill();
+}
+// Блок ?: у ньому сховане слово. Світиться, а від удару м'ячика здригається
+function drawMystery(c, w, t){
+  const sx = w.shake > 0 ? Math.sin(t * 90) * 2.5 : 0;
+  c.save();
+  c.shadowColor = 'rgba(255,201,60,.95)'; c.shadowBlur = 9 + 6 * Math.sin(t * 4);
+  rrect(c, w.x + sx, w.y, w.w, w.h, 6); c.fillStyle = '#6C5CE7'; c.fill();
+  c.restore();
+  c.lineWidth = 2; c.strokeStyle = '#FFC93C'; rrect(c, w.x + sx, w.y, w.w, w.h, 6); c.stroke();
+  c.fillStyle = '#fff'; c.font = `800 19px ${FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle';
+  c.fillText('?', w.x + sx + w.w / 2, w.y + w.h / 2 + 1);
+  c.fillStyle = 'rgba(255,255,255,.5)'; c.font = `800 13px ${FONT}`;
+  c.fillText('?', w.x + sx + w.w * .22, w.y + w.h / 2 + 1); c.fillText('?', w.x + sx + w.w * .78, w.y + w.h / 2 + 1);
+}
+function drawWord(c, w){
+  c.save(); c.shadowColor = 'rgba(0,0,0,.3)'; c.shadowBlur = 8; c.shadowOffsetY = 3;
+  rrect(c, w.x, w.y, w.w, w.h, 9); c.fillStyle = '#FFC93C'; c.fill();
+  c.restore();
+  c.lineWidth = 2.5; c.strokeStyle = '#E0A800'; rrect(c, w.x, w.y, w.w, w.h, 9); c.stroke();
+  c.fillStyle = '#1B1B3A'; c.font = `800 ${w.fs}px ${FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle';
+  c.fillText(w.item.w, w.x + w.w / 2, w.y + w.h / 2 + 1);
+}
+
+// Мініатюри для майстерні: картинка 124×68 (у CSS — 62×34)
+const thumbCache = {};
+function mini(key, w, h, fn){
+  if(!thumbCache[key]){
+    const cv = document.createElement('canvas');
+    cv.width = w; cv.height = h;
+    fn(cv.getContext('2d'));
+    thumbCache[key] = cv.toDataURL();
+  }
+  return thumbCache[key];
+}
+function thumb(kind, x){
+  if(kind === 'field') return mini('f:' + x.id, 124, 68, c=>{ c.scale(124 / W, 124 / W); c.translate(0, -230); x.draw(c); });
+  if(kind === 'brick') return mini(`b:${x.id}:${store.mode}`, 124, 68, c=>{
+    c.fillStyle = '#EDEBF7'; c.fillRect(0, 0, 124, 68); c.scale(1.05, 1.05);
+    [[3, 5, 0, 3], [61, 5, 0, 4], [3, 34, 3, 1], [61, 34, 6, 2]].forEach(([px, py, r, col])=>{
+      const b = { r, c:col, hp:1, max:1, mode:store.mode };
+      x.draw(c, px, py, BW, BH, b);
+    });
+  });
+  return mini('p:' + x.id, 124, 68, c=>{ c.fillStyle = '#EDEBF7'; c.fillRect(0, 0, 124, 68); x.draw(c, 8, 26, 108, PH, 0); });
+}
+// Дощечка без тла — для кнопки гравця
+const padThumb = p=>mini('pp:' + p.id, 124, 40, c=>p.draw(c, 4, 12, 116, PH, 0));
+// Прев'ю поля в майстерні: як виглядатиме гра з обраним оформленням
+function renderPreview(){
+  const cv = document.createElement('canvas');
+  cv.width = 300; cv.height = 360;
+  const c = cv.getContext('2d');
+  c.scale(.5, .5);
+  const grid = Array.from({ length:5 }, (_, r)=>Array.from({ length:COLS }, (_, col)=>
+    r === 2 && col >= 4 && col <= 6 ? null : r === 4 && col >= 4 && col <= 6 ? null : { hp:r === 0 ? 2 : 1, max:r === 0 ? 2 : 1 }));
+  const word = { state:'hidden', x:LEFT + 4 * CW + 2, y:TOP + 2 * RH + 2, w:3 * CW - 4, h:BH, shake:0 };
+  drawScene(c, { field:chosen('field'), brick:chosen('brick'), paddle:chosen('paddle'), mode:store.mode, grid, word,
+    ball:{ x:420, y:520 }, px:300, pw:130, t:0 });
+  $('gPrev').src = cv.toDataURL();
+}
+
+// Довідка для вчителя під грою: які налаштування діють
+function updateTeacherNote(){
+  const notes = [BOOST && 'складніші рівні', !soundOn && 'без звуку'].filter(Boolean);
+  const text = notes.length ? 'Налаштування вчителя: ' + notes.join(' · ') : '';
+  document.querySelectorAll('.teacher-note').forEach(n=>n.textContent = text);
+}
+
+/* ================= Колекція ================= */
+const isOpenItem = it=>store.total >= it.at;
+const gotCount = mode=>ITEMS.filter(it=>it.mode === mode && store.col[mode][it.id]).length;
+const modeTotal = mode=>ITEMS.filter(it=>it.mode === mode).length;
+let colMode = 'info';
+function citemHTML(it){
+  const n = store.col[it.mode][it.id];
+  if(n) return `<button type="button" class="citem" data-item="${it.id}">${n > 1 ? `<span class="cnt">×${n}</span>` : ''}${pic(it.id)}${esc(it.w)}</button>`;
+  if(isOpenItem(it)) return `<button type="button" class="citem open" data-item="${it.id}" title="Ще не спіймано">${pic(it.id)}?</button>`;
+  return `<div class="citem locked" title="Відкриється за ★ ${it.at}"><span class="lock">🔒</span><small>★ ${it.at}</small></div>`;
+}
+function renderCollection(){
+  document.querySelectorAll('#colModes [data-cmode]').forEach(b=>b.classList.toggle('on', b.dataset.cmode === colMode));
+  $('colCount').textContent = `Зібрано ${gotCount(colMode)} з ${modeTotal(colMode)}`;
+  $('colBody').innerHTML = GRADES.map(g=>{
+    const list = ITEMS.filter(it=>it.mode === colMode && it.grade === g);
+    const got = list.filter(it=>store.col[colMode][it.id]).length;
+    return `<div class="col-grade"><h4>${g} клас · ${got} з ${list.length}</h4><div class="col-grid">${list.map(citemHTML).join('')}</div></div>`;
+  }).join('');
+}
+function openCollection(){
+  if(G && G.phase === 'play') pause();
+  colMode = store.mode;
+  renderCollection();
+  $('colDetail').hidden = true;
+  $('colList').hidden = false;
+  $('colOverlay').classList.add('show');
+}
+function showDetail(it){
+  const n = store.col[it.mode][it.id];
+  $('colDetail').innerHTML = `<div class="detail">${pic(it.id)}<div>
+    <h3>${esc(it.w)}</h3>
+    ${it.mode === 'en' ? `<div class="tr">${esc(it.t)}</div>` : `<p>${esc(it.d)}</p>`}
+    <div class="meta">${it.grade} клас · спіймано ${timesWord(n)}</div>
+    <div class="detail-btns">${it.mode === 'en' && enVoice ? '<button type="button" class="btn btn-primary btn-small" data-say>🔊 Послухати</button>' : ''}
+      <button type="button" class="btn btn-ghost btn-small" data-back>← Уся колекція</button></div>
+  </div></div>`;
+  $('colDetail').dataset.item = it.id;
+  $('colList').hidden = true;
+  $('colDetail').hidden = false;
+  if(it.mode === 'en') speak(it.w);
+}
+$('colBody').addEventListener('click', e=>{
+  const b = e.target.closest('[data-item]');
+  if(!b) return;
+  const it = ITEM[b.dataset.item];
+  if(store.col[it.mode][it.id]) showDetail(it);
+  else showToast(`Це слово ще не спіймано. Шукай його в грі для ${it.grade} класу!`);
+});
+$('colDetail').addEventListener('click', e=>{
+  if(e.target.closest('[data-say]')) speak(ITEM[$('colDetail').dataset.item].w);
+  if(e.target.closest('[data-back]')){ $('colDetail').hidden = true; $('colList').hidden = false; }
+});
+$('colModes').addEventListener('click', e=>{
+  const b = e.target.closest('[data-cmode]');
+  if(b){ colMode = b.dataset.cmode; renderCollection(); }
+});
+$('colClose').addEventListener('click', ()=>$('colOverlay').classList.remove('show'));
+$('colOverlay').addEventListener('click', e=>{ if(e.target === $('colOverlay')) $('colOverlay').classList.remove('show'); });
+$('colBtn').addEventListener('click', ()=>{ if(!player){ openNameModal(true); return; } openCollection(); });
+$('colOpen').addEventListener('click', openCollection);
+
+/* ================= Екрани ================= */
+function showScreen(id){
+  for(const s of ['setup', 'game', 'result']) $(s).hidden = s !== id;
+  window.scrollTo(0, 0);
+}
+
+function renderSetup(){
+  document.querySelectorAll('#modes [data-mode]').forEach(b=>b.classList.toggle('on', b.dataset.mode === store.mode));
+  $('modeInfoN').textContent = `${gotCount('info')}/${modeTotal('info')}`;
+  $('modeEnN').textContent = `${gotCount('en')}/${modeTotal('en')}`;
+  $('grades').innerHTML = GRADES.map(g=>{
+    const list = ITEMS.filter(it=>it.mode === store.mode && it.grade === g);
+    const got = list.filter(it=>store.col[store.mode][it.id]).length;
+    return `<button type="button" class="grade${g === store.grade ? ' on' : ''}" data-grade="${g}"><b>${g} клас</b><span>🎒 ${got} з ${list.length}</span></button>`;
+  }).join('');
+  $('levels').innerHTML = Object.entries(LEVELS).map(([id, L])=>{
+    const b = store.best[`${store.mode}-${store.grade}-${id}`];
+    return `<button type="button" class="level" data-level="${id}">
+      <span class="lv-ico">${L.ico}</span>
+      <span class="lv-name">${L.name}</span>
+      <span class="lv-info">${L.info}</span>
+      <span class="lv-best${b ? ' got' : ''}">${b ? `Рекорд: ${b.score} · ${'★'.repeat(b.stars) + '☆'.repeat(3 - b.stars)}` : 'Ще не грали'}</span>
+    </button>`;
+  }).join('');
+  const got = Object.keys(store.col[store.mode]).filter(id=>ITEM[id]);
+  $('colStripN').textContent = `${MODES[store.mode]}: ${got.length} з ${modeTotal(store.mode)}`;
+  $('colThumbs').innerHTML = got.slice(-10).reverse().map(pic).join('');
+  renderGarage();
+}
+$('modes').addEventListener('click', e=>{
+  const b = e.target.closest('[data-mode]');
+  if(!b || b.dataset.mode === store.mode) return;
+  store.mode = b.dataset.mode;
+  save(); SFX.paddle(); renderSetup();
+});
+$('grades').addEventListener('click', e=>{
+  const b = e.target.closest('[data-grade]');
+  if(!b) return;
+  store.grade = +b.dataset.grade;
+  save(); SFX.paddle(); renderSetup();
+});
+$('levels').addEventListener('click', e=>{
+  const b = e.target.closest('[data-level]');
+  if(b) start(b.dataset.level);
+});
+
+// Що відкриється наступним: оформлення чи нове слово поточного режиму
+function nextUnlock(){
+  const shop = Object.entries(SHOP).flatMap(([kind, list])=>list.filter(x=>!isOpen(x)).map(x=>({ at:x.at, name:`${SHOP_NAME[kind].toLowerCase()} «${x.name}»` })));
+  const words = ITEMS.filter(it=>it.mode === store.mode && !isOpenItem(it)).map(it=>({ at:it.at, name:`нове слово для ${it.grade} класу` }));
+  return [...shop, ...words].sort((a, b)=>a.at - b.at)[0];
+}
+const pickHTML = (kind, x)=>{
+  const open = isOpen(x);
+  return `<button type="button" class="pick${x === chosen(kind) ? ' on' : ''}" data-kind="${kind}" data-id="${x.id}" ${open ? '' : 'disabled'} title="${open ? x.name : `Відкриється за ★ ${x.at}`}">
+    <img src="${thumb(kind, x)}" alt=""><span>${open ? '' : '🔒 '}${x.name}</span>${open ? '' : `<small>★ ${x.at}</small>`}</button>`;
+};
+function renderGarage(){
+  $('bank').innerHTML = `${icon('star')} ${pointsWord(store.total)}`;
+  const next = nextUnlock();
+  $('nextGoal').textContent = next ? `Далі відкриється ${next.name} — ще ${pointsWord(next.at - store.total)}` : 'Усе вже відкрито!';
+  $('fieldPicks').innerHTML = FIELDS.map(x=>pickHTML('field', x)).join('');
+  $('brickPicks').innerHTML = BRICKS.map(x=>pickHTML('brick', x)).join('');
+  $('paddlePicks').innerHTML = PADDLES.map(x=>pickHTML('paddle', x)).join('');
+  renderPreview();
+}
+$('garage').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-kind]');
+  if(!b || b.disabled) return;
+  store[b.dataset.kind] = b.dataset.id;
+  save();
+  SFX.paddle();
+  renderGarage();
+  renderPlayerBtn();
+});
+
+/* ================= Гравці ================= */
+const nameOverlay = $('nameOverlay'), profileOverlay = $('profileOverlay');
+function renderPlayerBtn(){
+  $('playerPad').src = padThumb(chosen('paddle'));
+  $('playerName').textContent = player || 'Гравець';
+}
+function openNameModal(required){
+  $('nameCancel').hidden = required;
+  const names = Object.keys(db.players).sort((a, b)=>a.localeCompare(b, 'uk'));
+  $('knownPlayers').innerHTML = names.length
+    ? `<span class="note-small" style="width:100%; margin:0">Уже грали на цьому комп'ютері — обери себе:</span>` +
+      names.map(n=>`<button type="button" class="chip-btn" data-n="${esc(n)}">👤 ${esc(n)}</button>`).join('')
+    : '';
+  $('nameInput').value = '';
+  $('nameErr').textContent = '';
+  nameOverlay.classList.add('show');
+  setTimeout(()=>$('nameInput').focus(), 50);
+}
+$('knownPlayers').addEventListener('click', e=>{ const b = e.target.closest('[data-n]'); if(b) enterGame(b.dataset.n); });
+$('nameForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const n = $('nameInput').value.trim().replace(/\s+/g, ' ');
+  if(n.length < 2){ $('nameErr').textContent = 'Введи своє ім\'я (хоча б 2 літери).'; $('nameInput').focus(); return; }
+  enterGame(n);
+});
+$('nameCancel').addEventListener('click', ()=>nameOverlay.classList.remove('show'));
+function enterGame(name){
+  loadPlayer(name);
+  nameOverlay.classList.remove('show');
+  profileOverlay.classList.remove('show');
+  renderPlayerBtn();
+  toSetup();
+}
+function renderProfile(){
+  const names = Object.keys(db.players).sort((a, b)=>a === player ? -1 : b === player ? 1 : a.localeCompare(b, 'uk'));
+  $('playerList').innerHTML = names.map(n=>{
+    const p = db.players[n], me = n === player;
+    const pad = PADDLES.find(x=>x.id === p.paddle && x.at <= (p.total || 0)) || PADDLES[0];
+    const col = p.col ? Object.keys(p.col.info || {}).length + Object.keys(p.col.en || {}).length : 0;
+    return `<div class="pl-row${me ? ' me' : ''}"><img class="pb-pad" src="${padThumb(pad)}" alt="">
+      <span class="pl-name">${esc(n)}<small>★ ${p.total || 0} · у колекції ${col} з ${ITEMS.length}</small></span>
+      ${me ? '<span class="pl-you">це ти</span>' : `<button type="button" class="btn btn-primary btn-small" data-play="${esc(n)}">Грати</button>`}
+      <button type="button" class="pl-del" data-del="${esc(n)}" title="Видалити гравця">✕</button>
+    </div>`;
+  }).join('');
+  $('addInput').value = '';
+  $('addErr').textContent = '';
+}
+function openProfile(){
+  if(!player){ openNameModal(true); return; }
+  if(G) toSetup();
+  renderProfile();
+  profileOverlay.classList.add('show');
+}
+function deletePlayer(name){
+  if(!confirm(`Видалити гравця «${name}» з цього комп'ютера разом із балами й колекцією?`)) return;
+  delete db.players[name];
+  if(name !== player){ save(); renderProfile(); return; }
+  const other = Object.keys(db.players)[0];
+  if(other){ enterGame(other); return; }
+  db.current = null;
+  save();
+  player = null;
+  store = newProfile();
+  renderPlayerBtn();
+  profileOverlay.classList.remove('show');
+  toSetup();
+  openNameModal(true);
+}
+$('playerList').addEventListener('click', e=>{
+  const play = e.target.closest('[data-play]'), del = e.target.closest('[data-del]');
+  if(play) enterGame(play.dataset.play);
+  if(del) deletePlayer(del.dataset.del);
+});
+$('addForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const n = $('addInput').value.trim().replace(/\s+/g, ' ');
+  if(n.length < 2){ $('addErr').textContent = 'Введи ім\'я (хоча б 2 літери).'; return; }
+  enterGame(n);
+});
+$('playerBtn').addEventListener('click', openProfile);
+$('profClose').addEventListener('click', ()=>profileOverlay.classList.remove('show'));
+
+/* ================= Гра ================= */
+const cv = $('cv'), ctx = cv.getContext('2d'), field = $('field');
+let G = null;           // поточна гра
+let lastLevel = 'easy';
+let bgCv = null, bgKey = '';
+
+// Розмір поля під вікно: уся гра видна без прокрутки
+function fit(){
+  if($('game').hidden) return;
+  const side = $('side'), sideW = side.offsetParent ? side.offsetWidth + 16 : 0;
+  const avW = $('play').clientWidth - sideW;
+  const avH = Math.max(300, innerHeight - field.getBoundingClientRect().top - 14);
+  const cssW = Math.floor(Math.min(avW, avH * W / H, 640));
+  field.style.setProperty('--fw', cssW + 'px');
+  const bw = Math.round(cssW * Math.min(2, window.devicePixelRatio || 1));
+  if(cv.width !== bw){ cv.width = bw; cv.height = Math.round(bw * H / W); }
+  if(G && G.phase !== 'play') draw();
+}
+window.addEventListener('resize', fit);
+// Тло малюється один раз на розмір канви
+function background(){
+  const f = chosen('field'), key = f.id + ':' + cv.width;
+  if(bgKey !== key){
+    bgCv = document.createElement('canvas');
+    bgCv.width = cv.width; bgCv.height = cv.height;
+    const c = bgCv.getContext('2d');
+    c.scale(cv.width / W, cv.height / H);
+    f.draw(c);
+    bgKey = key;
+  }
+  return bgCv;
+}
+
+function start(levelId){
+  stopGame();
+  lastLevel = levelId;
+  const L = LEVELS[levelId];
+  G = { id:levelId, L, mode:store.mode, grade:store.grade, t:0, score:0, words:0, escaped:0, lostBalls:0, bricks:0, walls:0,
+        turbo:false, turboT:0, found:[], queue:[], grid:[], word:null, wordWait:0, px:W / 2, pw:L.paddle,
+        ball:{ x:W / 2, y:PY - R - 1, vx:0, vy:0, held:true, heldT:0 }, fx:[], pops:[],
+        phase:'count', paused:false, raf:0, last:0, timers:[], keys:{} };
+  buildWall(true);
+  $('pauseOver').hidden = true;
+  $('score').textContent = '0';
+  $('wordsGot').textContent = '0';
+  $('time').textContent = fmtTime(L.time);
+  $('timeChip').classList.remove('low');
+  $('turboBtn').classList.remove('on');
+  $('turboX').textContent = '';
+  $('find').className = 'find';
+  $('find').innerHTML = '<div class="empty">Спіймай слово — і тут з\'явиться предмет 🎁</div>';
+  $('findPop').classList.remove('show');
+  showScreen('game');
+  fit();
+  countdown();
+}
+
+// Відлік 3-2-1. Дощечкою вже можна рухати
+function countdown(){
+  $('countOver').hidden = false;
+  G.last = performance.now();
+  G.raf = requestAnimationFrame(loop);
+  [3, 2, 1].forEach((n, i)=>G.timers.push(setTimeout(()=>{
+    const el = $('countNum');
+    el.textContent = n;
+    el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
+    SFX.beep();
+  }, i * 700)));
+  G.timers.push(setTimeout(()=>{
+    $('countOver').hidden = true;
+    SFX.go();
+    G.phase = 'play';
+    G.last = performance.now();
+    if(document.hidden || !document.hasFocus()) pause();
+  }, 3 * 700));
+}
+
+function loop(now){
+  if(!G || G.phase === 'stopped' || G.phase === 'end' || G.paused) return;
+  const dt = Math.min(.05, (now - G.last) / 1000);
+  G.last = now;
+  if(G.phase === 'play') step(dt);
+  else if(G.phase === 'count') followPaddle(dt);
+  if(!G || G.phase === 'end') return;
+  draw();
+  G.raf = requestAnimationFrame(loop);
+}
+
+const ballSpeed = ()=>{
+  const L = G.L, k = Math.min(1, G.t / L.time);
+  return (L.speed[0] + (L.speed[1] - L.speed[0]) * k) * (G.turbo ? TURBO : 1);
+};
+function setPaddle(x){ if(G) G.px = clamp(x, G.pw / 2, W - G.pw / 2); }
+// Стрілки на клавіатурі й м'ячик, що лежить на дощечці
+function followPaddle(dt){
+  const k = (G.keys.ArrowRight ? 1 : 0) - (G.keys.ArrowLeft ? 1 : 0);
+  if(k) setPaddle(G.px + k * 650 * dt);
+  const b = G.ball;
+  if(b.held){ b.x = G.px; b.y = PY - R - 1; }
+}
+
+function step(dt){
+  const L = G.L;
+  G.t += dt;
+  const left = L.time - G.t;
+  if(left <= 0){ $('time').textContent = fmtTime(0); finish(); return; }
+  $('time').textContent = fmtTime(Math.ceil(left));
+  $('timeChip').classList.toggle('low', left <= 10);
+  if(G.turbo) G.turboT += dt;
+
+  followPaddle(dt);
+  const b = G.ball;
+  if(b.held){ b.heldT += dt; if(b.heldT >= AUTO_LAUNCH) launch(); }
+  else moveBall(b, dt);
+
+  // Слово: сховане чекає, поки під ним розчистять колонки; падаюче — ловимо дощечкою
+  const w = G.word;
+  if(w){
+    if(w.shake > 0) w.shake -= dt;
+    if(w.state === 'falling'){
+      w.y += L.fall * dt;
+      if(w.y + w.h >= PY && w.y <= PY + PH && w.x + w.w >= G.px - G.pw / 2 && w.x <= G.px + G.pw / 2) caught();
+      else if(w.y > H) escaped();
+    }
+  } else if((G.wordWait -= dt) <= 0) placeWord(false);
+
+  // Ефекти: уламки цеглинок, бали, що злітають, малюнок спійманого предмета
+  for(const f of G.fx){ f.t += dt; if(f.kind === 'bit'){ f.x += f.vx * dt; f.y += f.vy * dt; f.vy += 700 * dt; } }
+  G.fx = G.fx.filter(f=>f.t < f.life);
+}
+
+function holdBall(){ Object.assign(G.ball, { held:true, heldT:0, vx:0, vy:0, x:G.px, y:PY - R - 1 }); }
+function launch(){
+  const b = G.ball;
+  if(!G || G.phase !== 'play' || G.paused || !b.held) return;
+  b.held = false;
+  const a = (Math.random() - .5) * .8, s = ballSpeed();
+  b.vx = s * Math.sin(a); b.vy = -s * Math.cos(a);
+  SFX.paddle();
+}
+// М'ячик не летить надто полого: інакше він довго сновигає від стінки до стінки
+function fixAngle(b){
+  const s = Math.hypot(b.vx, b.vy) || 1, min = s * .3;
+  if(Math.abs(b.vy) < min){ b.vy = (b.vy < 0 ? -1 : 1) * min; b.vx = Math.sign(b.vx || 1) * Math.sqrt(s * s - min * min); }
+}
+function moveBall(b, dt){
+  // Швидкість росте з часом і в турбо: щоразу підганяємо довжину вектора
+  const s = ballSpeed(), cur = Math.hypot(b.vx, b.vy) || 1;
+  b.vx *= s / cur; b.vy *= s / cur;
+  const n = Math.max(1, Math.ceil(s * dt / 4)), h = dt / n;   // дрібні кроки, щоб м'ячик не проскакував крізь цеглинки
+  for(let i = 0; i < n; i++){
+    b.x += b.vx * h; b.y += b.vy * h;
+    if(b.x < R){ b.x = R; b.vx = Math.abs(b.vx); SFX.wall(); }
+    if(b.x > W - R){ b.x = W - R; b.vx = -Math.abs(b.vx); SFX.wall(); }
+    if(b.y < R){ b.y = R; b.vy = Math.abs(b.vy); SFX.wall(); }
+    // Дощечка: кут відскоку залежить від того, куди влучив м'ячик — ближче до краю, то пологіше
+    if(b.vy > 0 && b.y + R >= PY && b.y - R <= PY + PH && b.x >= G.px - G.pw / 2 - R && b.x <= G.px + G.pw / 2 + R){
+      const k = clamp((b.x - G.px) / (G.pw / 2 + R / 2), -1, 1), a = k * 1.05;
+      b.vx = s * Math.sin(a); b.vy = -s * Math.cos(a);
+      b.y = PY - R;
+      SFX.paddle();
+    }
+    if(collide(b)) fixAngle(b);
+    if(b.y - R > H){ ballLost(); return; }
+  }
+}
+// Чи торкається м'ячик прямокутника, і в який бік його відбити
+function touchRect(b, x, y, w, h){
+  const cx = clamp(b.x, x, x + w), cy = clamp(b.y, y, y + h);
+  const dx = b.x - cx, dy = b.y - cy, d2 = dx * dx + dy * dy;
+  if(d2 >= R * R) return null;
+  if(!dx && !dy) return { axis:'y', sign:b.vy > 0 ? -1 : 1, depth:R };   // центр усередині — назад, звідки прилетів
+  const d = Math.sqrt(d2);
+  return Math.abs(dx) > Math.abs(dy) ? { axis:'x', sign:Math.sign(dx), depth:R - d } : { axis:'y', sign:Math.sign(dy), depth:R - d };
+}
+function collide(b){
+  let best = null;
+  const c0 = Math.max(0, Math.floor((b.x - R - LEFT) / CW)), c1 = Math.min(COLS - 1, Math.floor((b.x + R - LEFT) / CW));
+  const r0 = Math.max(0, Math.floor((b.y - R - TOP) / RH)), r1 = Math.min(G.grid.length - 1, Math.floor((b.y + R - TOP) / RH));
+  for(let r = r0; r <= r1; r++) for(let c = c0; c <= c1; c++){
+    if(!G.grid[r][c]) continue;
+    const h = touchRect(b, LEFT + c * CW + 2, TOP + r * RH + 2, BW, BH);
+    if(h && (!best || h.depth > best.depth)) best = Object.assign(h, { r, c });
+  }
+  const w = G.word;
+  if(w && w.state === 'hidden'){
+    const h = touchRect(b, w.x, w.y, w.w, w.h);
+    if(h && (!best || h.depth > best.depth)) best = Object.assign(h, { word:true });
+  }
+  if(!best) return false;
+  if(best.axis === 'x'){ b.vx = best.sign * Math.abs(b.vx); b.x += best.sign * best.depth; }
+  else { b.vy = best.sign * Math.abs(b.vy); b.y += best.sign * best.depth; }
+  if(best.word){ SFX.stone(); w.shake = .25; }
+  else hitBrick(best.r, best.c);
+  return true;
+}
+function hitBrick(r, c){
+  const k = G.grid[r][c], x = LEFT + c * CW + 2 + BW / 2, y = TOP + r * RH + 2 + BH / 2;
+  k.hp--;
+  if(k.hp > 0){ SFX.dent(); return; }
+  G.grid[r][c] = null;
+  G.bricks++;
+  const pts = k.max * (G.turbo ? 2 : 1);
+  addScore(pts, x, y, '+' + pts);
+  SFX.brick(r);
+  const col = chosen('brick').id === 'brick' ? '#C8553D' : ROWC[r % 8];
+  for(let i = 0; i < 7; i++) G.fx.push({ kind:'bit', x, y, vx:(Math.random() - .5) * 260, vy:-Math.random() * 220, t:0, life:.55, col });
+  checkWord();
+}
+function ballLost(){
+  G.lostBalls++;
+  SFX.lost();
+  popText('М\'ячик утік', W / 2, PY - 60, true);
+  holdBall();
+}
+
+// Стіна цеглинок. Перша — на початку гри, наступні — коли цеглинок для схованки вже не лишилось
+function buildWall(first){
+  const L = G.L;
+  G.grid = Array.from({ length:L.rows }, ()=>Array.from({ length:COLS }, ()=>{
+    const roll = Math.random(), max = roll < L.tough ? 3 : roll < L.tough + L.strong ? 2 : 1;
+    return { hp:max, max };
+  }));
+  if(!first){
+    G.walls++;
+    addScore(15, W / 2, TOP + L.rows * RH + 40, 'Нова стіна! +15', true);
+    SFX.newWall();
+    if(!G.ball.held && G.ball.y - R < TOP + L.rows * RH + 6) holdBall();
+  }
+  placeWord(true);
+}
+// Скільки цеглинок лишилось під трьома колонками схованки
+function countBelow(r, c){
+  let n = 0;
+  for(let rr = r + 1; rr < G.grid.length; rr++) for(let k = 0; k < 3; k++) if(G.grid[rr][c + k]) n++;
+  return n;
+}
+const wordRect = (r, c)=>({ x:LEFT + c * CW + 2, y:TOP + r * RH + 2, w:3 * CW - 4, h:BH });
+// Де сховати слово. Нова стіна: ряд за рівнем (depth, spread). Далі — там, де під схованкою лишилось кілька цеглинок
+function wordSpot(fresh){
+  const L = G.L, rows = G.grid.length;
+  if(fresh) return { r:Math.max(0, rows - 1 - L.depth - Math.floor(Math.random() * (L.spread + 1))), c:Math.floor(Math.random() * (COLS - 2)) };
+  const b = G.ball, want = L.depth * 3, spots = [];
+  for(let r = 0; r < rows - 1; r++) for(let c = 0; c <= COLS - 3; c++){
+    const below = countBelow(r, c), q = wordRect(r, c);
+    const ballIn = b.x + R > q.x - 4 && b.x - R < q.x + q.w + 4 && b.y + R > q.y - 4 && b.y - R < q.y + q.h + 4;
+    if(below >= 2 && !ballIn) spots.push({ r, c, below });
+  }
+  if(!spots.length) return null;
+  spots.sort((a, b)=>Math.abs(a.below - want) - Math.abs(b.below - want));
+  return pick(spots.slice(0, 6));
+}
+// Черга слів: спершу ще не зібрані слова обраного класу, далі — попередніх класів, потім повторення зібраних
+function buildQueue(){
+  const got = it=>store.col[G.mode][it.id];
+  const pool = g=>ITEMS.filter(it=>it.mode === G.mode && it.grade === g && isOpenItem(it));
+  const mine = pool(G.grade), lower = GRADES.filter(g=>g < G.grade).flatMap(pool);
+  return [...shuffle(mine.filter(it=>!got(it))), ...shuffle(lower.filter(it=>!got(it))), ...shuffle([...mine, ...lower].filter(got))];
+}
+function placeWord(fresh){
+  const s = wordSpot(fresh);
+  if(!s){ buildWall(false); return; }
+  if(!G.queue.length) G.queue = buildQueue();
+  const item = G.queue.shift();
+  for(let k = 0; k < 3; k++) G.grid[s.r][s.c + k] = null;
+  G.word = Object.assign({ item, state:'hidden', r:s.r, c:s.c, shake:0 }, wordRect(s.r, s.c));
+  picImg(item.id);   // малюнок знадобиться, коли слово спіймають
+  checkWord();
+}
+// Під схованкою порожньо — слово падає
+function checkWord(){
+  const w = G.word;
+  if(!w || w.state !== 'hidden' || countBelow(w.r, w.c) > 0) return;
+  w.state = 'falling';
+  let fs = 21;
+  ctx.font = `800 ${fs}px ${FONT}`;
+  let tw = ctx.measureText(w.item.w).width;
+  if(tw + 30 > W - 20){ fs = Math.floor(fs * (W - 50) / tw); ctx.font = `800 ${fs}px ${FONT}`; tw = ctx.measureText(w.item.w).width; }
+  const cx = w.x + w.w / 2;
+  w.fs = fs;
+  w.w = Math.max(3 * CW - 4, Math.ceil(tw) + 30);
+  w.h = 34;
+  w.x = clamp(cx - w.w / 2, 6, W - 6 - w.w);
+  SFX.reveal();
+  popText('Лови слово!', cx, w.y - 6, false, '#FFC93C');
+  // Якщо стіну вже розбито, наступна з'явиться, щойно слово впаде
+}
+function caught(){
+  const w = G.word, it = w.item, col = store.col[G.mode], isNew = !col[it.id];
+  col[it.id] = (col[it.id] || 0) + 1;
+  save();   // предмет у колекції залишається, навіть якщо гру не дограли
+  G.words++;
+  G.found.push({ it, isNew });
+  addScore(isNew ? 15 : 10, w.x + w.w / 2, PY - 30, isNew ? 'Нове! +15' : '+10', true);
+  G.fx.push({ kind:'pic', img:picImg(it.id), x:clamp(G.px, 50, W - 50), y:PY - 60, t:0, life:1.4 });
+  const chip = $('wordsChip');
+  $('wordsGot').textContent = G.words;
+  chip.classList.remove('bump'); void chip.offsetWidth; chip.classList.add('bump');
+  showFind(it, isNew);
+  SFX.caught();
+  if(G.mode === 'en') speak(it.w);
+  G.word = null;
+  G.wordWait = .9;
+}
+function escaped(){
+  G.escaped++;
+  SFX.escape();
+  popText('Слово втекло…', W / 2, PY - 60, true);
+  G.word = null;
+  G.wordWait = .9;
+}
+function showFind(it, isNew){
+  const f = $('find');
+  f.className = 'find';
+  f.innerHTML = `${pic(it.id)}<b>${esc(it.w)}</b>${isNew ? '<span class="new-tag">нове!</span>' : ''}<span>${esc(it.mode === 'en' ? it.t : it.d)}</span>`;
+  void f.offsetWidth; f.classList.add('new');
+  const p = $('findPop');
+  p.innerHTML = `${pic(it.id)}${esc(it.w)}${it.mode === 'en' ? ' — ' + esc(it.t) : ''}`;
+  p.classList.remove('show'); void p.offsetWidth; p.classList.add('show');
+  clearTimeout(p._t);
+  p._t = setTimeout(()=>p.classList.remove('show'), 2400);
+}
+function addScore(n, x, y, text, big){
+  G.score += n;
+  const s = $('score');
+  s.textContent = G.score;
+  s.classList.add('pop');
+  setTimeout(()=>s.classList.remove('pop'), 180);
+  popText(text, x, y, false, null, big);
+}
+function popText(text, x, y, minus, color, big){
+  G.fx.push({ kind:'text', text, x, y, t:0, life:big ? 1.3 : .8, minus, color, big });
+}
+
+function draw(){
+  if(!G) return;
+  const k = cv.width / W;
+  ctx.setTransform(k, 0, 0, k, 0, 0);
+  const t = performance.now() / 1000;
+  drawScene(ctx, { field:chosen('field'), brick:chosen('brick'), paddle:chosen('paddle'), mode:G.mode, grid:G.grid, word:G.word,
+    ball:G.ball, px:G.px, pw:G.pw, t, bg:background() });
+  const dark = chosen('field').dark;
+  if(G.ball.held && G.phase === 'play'){
+    ctx.fillStyle = dark ? 'rgba(255,255,255,.85)' : 'rgba(27,27,58,.75)';
+    ctx.font = `800 17px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('Клацни, щоб запустити м\'ячик', W / 2, PY - 44);
+  }
+  for(const f of G.fx){
+    const p = f.t / f.life;
+    if(f.kind === 'bit'){
+      ctx.globalAlpha = 1 - p; ctx.fillStyle = f.col; ctx.fillRect(f.x - 3, f.y - 3, 6, 6);
+    } else if(f.kind === 'text'){
+      ctx.globalAlpha = Math.min(1, 2 * (1 - p));
+      ctx.font = `800 ${f.big ? 26 : 18}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(27,27,58,.4)';
+      const y = f.y - p * 46;
+      ctx.strokeText(f.text, f.x, y);
+      ctx.fillStyle = f.color || (f.minus ? '#FFB3A6' : '#fff');
+      ctx.fillText(f.text, f.x, y);
+    } else if(f.kind === 'pic' && f.img.complete){
+      // Спіймане слово стає предметом: малюнок виростає й відлітає вгору — у колекцію
+      const grow = Math.min(1, f.t / .3), fly = Math.max(0, (f.t - .75) / .65);
+      const s = 50 + 46 * (1 - Math.pow(1 - grow, 3)) - 40 * fly;
+      const x = f.x + (W - 40 - f.x) * fly, y = f.y - 30 * grow - (f.y - 30) * fly;
+      ctx.globalAlpha = 1 - fly * .8;
+      ctx.save(); ctx.shadowColor = 'rgba(255,201,60,.9)'; ctx.shadowBlur = 24;
+      ctx.drawImage(f.img, x - s / 2, y - s / 2, s, s);
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  }
+}
+
+function pause(){
+  if(!G || G.phase !== 'play' || G.paused) return;
+  G.paused = true;
+  cancelAnimationFrame(G.raf);
+  $('pauseOver').hidden = false;
+}
+function resume(){
+  if(!G || !G.paused) return;
+  G.paused = false;
+  $('pauseOver').hidden = true;
+  G.last = performance.now();
+  G.raf = requestAnimationFrame(loop);
+}
+function stopGame(){
+  if(!G) return;
+  cancelAnimationFrame(G.raf);
+  G.timers.forEach(clearTimeout);
+  G.phase = 'stopped';
+}
+function toggleTurbo(){
+  if(!G || G.phase !== 'play' || G.paused) return;
+  G.turbo = !G.turbo;
+  $('turboBtn').classList.toggle('on', G.turbo);
+  $('turboX').textContent = G.turbo ? '×2' : '';
+  (G.turbo ? SFX.turboOn : SFX.turboOff)();
+}
+
+// Кінець гри: час вийшов. Зірки — за спіймані слова (STARS_AT)
+function finish(){
+  G.phase = 'end';
+  cancelAnimationFrame(G.raf);
+  const g = G;
+  const stars = STARS_AT.filter(n=>g.words >= n).length;
+  const key = `${g.mode}-${g.grade}-${g.id}`, prev = store.best[key];
+  const record = !prev || g.score > prev.score || (g.score === prev.score && stars > prev.stars);
+  if(record) store.best[key] = { score:g.score, stars };
+  const before = store.total;
+  store.total += g.score;
+  store.rounds++;
+  const opened = Object.entries(SHOP).flatMap(([kind, list])=>list.filter(x=>x.at > before && isOpen(x)).map(x=>({ kind, x })));
+  const newWords = ITEMS.filter(it=>it.at > before && isOpenItem(it));
+  save();
+
+  $('resEmoji').textContent = g.words ? '🎉' : '⏰';
+  $('resTitle').textContent = stars === 3 ? 'Чудово!' : 'Час вийшов!';
+  $('resStars').innerHTML = starsText(stars);
+  $('resScore').innerHTML = `${icon('star')} ${pointsWord(g.score)}`;
+  $('resRecord').textContent = record && prev ? '🏆 Новий рекорд!' : !g.words ? 'Збий цеглинки під блоком ? — і слово впаде. Спробуй ще!' : '';
+  $('resFound').innerHTML = g.found.map(({ it, isNew })=>
+    `<div class="citem">${isNew ? '<span class="new-tag">нове!</span>' : ''}${pic(it.id)}${esc(it.w)}</div>`).join('');
+  const modeName = MODES[g.mode];
+  $('resList').innerHTML = [
+    ['Гра', `${modeName} · ${g.grade} клас`],
+    ['Рівень', `${g.L.ico} ${g.L.name}`],
+    ['Слів спіймано', g.words],
+    g.escaped && ['Слів утекло', g.escaped],
+    ['Цеглинок збито', g.bricks],
+    ['М\'ячик утікав', timesWord(g.lostBalls)],
+    g.turboT >= 1 && ['У турбо', fmtTime(g.turboT)],
+    ['У скарбничці', `★ ${store.total}`],
+  ].filter(Boolean).map(([k, v])=>`<li><span>${k}</span><b>${v}</b></li>`).join('');
+  const wordsBy = m=>newWords.filter(it=>it.mode === m).length;
+  $('resUnlock').innerHTML = (opened.length ? `<div class="unlock"><b>🔓 Відкрито в майстерні!</b><div class="unlock-list">${opened.map(({ kind, x })=>
+    `<span class="unlock-item"><img src="${thumb(kind, x)}" alt="">${SHOP_NAME[kind]}: ${x.name}</span>`).join('')}</div></div>` : '')
+    + (newWords.length ? `<div class="unlock"><b>🔓 Нові слова для колекції!</b><div class="unlock-list">${Object.keys(MODES).filter(wordsBy).map(m=>
+      `<span class="unlock-item">${MODES[m]}: ${wordsBy(m)}</span>`).join('')}</div></div>` : '');
+  if(opened.length || newWords.length) sparkle(1.2);
+
+  if(stars === 3 || (record && prev)){ popper(); bigFanfare(.1); confetti(stars === 3 ? 160 : 90); }
+  else fanfare();
+  setTimeout(()=>{ if(G === g){ renderSetup(); showScreen('result'); } }, 500);
+}
+
+function toSetup(){ stopGame(); G = null; renderSetup(); showScreen('setup'); }
+
+/* ================= Миша, клавіші, фокус ================= */
+// Дощечка їде за мишею — де б не був вказівник над сторінкою. На планшеті — за пальцем на полі
+document.addEventListener('pointermove', e=>{
+  if(!G || $('game').hidden || G.paused) return;
+  if(e.pointerType !== 'mouse' && !e.target.closest('#field')) return;
+  const r = cv.getBoundingClientRect();
+  setPaddle((e.clientX - r.left) * W / r.width);
+});
+document.addEventListener('mousedown', e=>{
+  if(!G || $('game').hidden || e.button !== 0 || e.target.closest('[data-ui]') || e.target.closest('.overlay')) return;
+  e.preventDefault();   // без виділення тексту
+  launch();
+});
+field.addEventListener('pointerdown', e=>{
+  if(e.pointerType === 'mouse' || e.target.closest('[data-ui]')) return;
+  e.preventDefault();
+  const r = cv.getBoundingClientRect();
+  setPaddle((e.clientX - r.left) * W / r.width);
+  launch();
+});
+document.addEventListener('contextmenu', e=>{ if(!$('game').hidden) e.preventDefault(); });
+
+document.addEventListener('keydown', e=>{
+  if(e.ctrlKey && e.altKey && e.code === 'KeyZ'){ e.preventDefault(); setSound(!soundOn); return; }
+  if(!G || $('game').hidden || document.querySelector('.overlay.show')) return;
+  if(e.code === 'Space'){ e.preventDefault(); if(G.paused) resume(); else pause(); return; }
+  if(e.code === 'ArrowLeft' || e.code === 'ArrowRight'){ e.preventDefault(); G.keys[e.code] = true; }
+  if(e.code === 'ArrowUp' || e.code === 'Enter'){ e.preventDefault(); launch(); }
+});
+document.addEventListener('keyup', e=>{ if(G) G.keys[e.code] = false; });
+// Вікно втратило фокус — пауза, щоб м'ячик не втік без учня
+window.addEventListener('blur', ()=>{ pause(); if(G) G.keys = {}; });
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden) pause(); });
+
+$('turboBtn').addEventListener('click', toggleTurbo);
+$('pauseBtn').addEventListener('click', ()=>G && (G.paused ? resume() : pause()));
+$('resumeBtn').addEventListener('click', resume);
+$('exitBtn').addEventListener('click', toSetup);
+$('againBtn').addEventListener('click', ()=>start(lastLevel));
+$('levelsBtn').addEventListener('click', toSetup);
+
+/* ================= Повний екран ================= */
+const fsBtn = $('fsBtn');
+const isFull = ()=>!!document.fullscreenElement || matchMedia('(display-mode: fullscreen)').matches
+  || (innerWidth >= screen.width - 2 && innerHeight >= screen.height - 2);
+function updateFsBtn(){
+  const full = isFull();
+  fsBtn.classList.toggle('full', full);
+  fsBtn.title = full ? 'Звичайне вікно (F11)' : 'На весь екран (F11)';
+  fsBtn.setAttribute('aria-label', fsBtn.title);
+}
+fsBtn.addEventListener('click', ()=>{
+  fsBtn.blur();
+  if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  else if(isFull()) showToast('Щоб вийти з повного екрана, натисни F11');
+  else document.documentElement.requestFullscreen().catch(()=>{});
+});
+document.addEventListener('fullscreenchange', ()=>{ updateFsBtn(); fit(); });
+window.addEventListener('resize', updateFsBtn);
+fsBtn.hidden = !document.fullscreenEnabled;
+updateFsBtn();
+
+/* ================= Запуск ================= */
+// Прихований перемикач звуку: ?zvuk=klas (зі звуком) або ?zvuk=tykho (без звуку), параметр одразу зникає з адреси; чи Ctrl+Alt+Z
+{
+  const q = new URLSearchParams(location.search), z = q.get('zvuk');
+  if(z === 'klas' || z === 'tykho'){
+    q.delete('zvuk');
+    const rest = q.toString().replace(/=(?=&|$)/g, '');
+    history.replaceState(null, '', location.pathname + (rest ? '?' + rest : '') + location.hash);
+    setSound(z === 'klas');
+  }
+}
+updateTeacherNote();
+if(db.current && db.players[db.current]) loadPlayer(db.current);
+renderPlayerBtn();
+renderSetup();
+if(!player) openNameModal(true);
+// Шрифт для слів на полі: коли завантажиться, мініатюри «Клавіші» перемальовуємо
+if(document.fonts) document.fonts.load(`800 20px ${FONT}`).then(()=>{ for(const k in thumbCache) if(k.startsWith('b:keys')) delete thumbCache[k]; if(!$('setup').hidden) renderGarage(); }).catch(()=>{});
+// Офлайн: обробник sw.js зберігає гру в браузері, щоб вона відкривалась без інтернету
+if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>

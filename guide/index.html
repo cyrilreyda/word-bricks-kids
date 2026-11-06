@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Як грати · Цеглинки слів</title>
+<link href="../fonts/fonts.css" rel="stylesheet">   <!-- локальні шрифти: гра працює без інтернету -->
+<link rel="icon" type="image/png" href="../icons/icon-192.png">
+<style>
+  :root{
+    --bg:#F6F5FB; --ink:#1B1B3A; --ink-soft:#514F72; --surface:#FFFFFF; --line:#E4E1F5;
+    --purple:#6C5CE7; --teal:#16A3A0; --teal-dark:#0E7C7A; --coral:#FF6B4A; --yellow:#FFC93C;
+    --radius-s:10px; --radius-m:16px; --radius-l:26px;
+    --left:#16A3A0; --right:#FF6B4A;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:'Nunito Sans',sans-serif; font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;}
+  h1,h2,h3{font-family:'Baloo 2',sans-serif; font-weight:700; margin:0; color:var(--ink); line-height:1.25;}
+  .container{max-width:860px; margin:0 auto; padding:0 16px;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{position:sticky; top:0; z-index:10; background:rgba(246,245,251,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:860px; margin:0 auto; padding:12px 16px; display:flex; align-items:center; gap:12px;}
+  .back-link{font-family:'Baloo 2',sans-serif; font-weight:600; font-size:14px; color:var(--teal-dark); text-decoration:none; white-space:nowrap;}
+  .back-link:hover{text-decoration:underline;}
+  .play-link{margin-left:auto; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:14px; text-decoration:none; background:var(--teal); color:#fff; border-radius:999px; padding:4px 16px; white-space:nowrap;}
+  .play-link:hover{background:var(--teal-dark);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:28px 0 6px;}
+  .eyebrow{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:13px; letter-spacing:.06em; text-transform:uppercase; color:var(--teal-dark);}
+  .hero h1{font-size:32px; margin:2px 0 4px;}
+  .hero p{margin:0; color:var(--ink-soft); font-size:17px;}
+  @media (max-width:600px){ .hero h1{font-size:26px;} }
+
+  /* ---------- Кроки ---------- */
+  .steps{list-style:none; margin:20px 0 0; padding:0; display:grid; gap:14px;}
+  .step{display:grid; grid-template-columns:44px 1fr; gap:16px; align-items:center; background:var(--surface); border:1.5px solid var(--line); border-radius:var(--radius-l); padding:18px 20px;}
+  .step.key{border:2px solid var(--teal); box-shadow:0 5px 0 #D2F0EF;}
+  .num{width:44px; height:44px; border-radius:50%; background:var(--teal); color:#fff; display:flex; align-items:center; justify-content:center; font-family:'Baloo 2',sans-serif; font-weight:800; font-size:22px; align-self:start;}
+  .step h2{font-size:20px; margin-bottom:2px;}
+  .step p{margin:0; color:var(--ink-soft); font-size:15px;}
+  .step p + p{margin-top:4px;}
+  .l{color:var(--left); font-weight:800;} .r{color:var(--right); font-weight:800;}
+  .items{display:flex; flex-wrap:wrap; gap:6px 18px; margin-top:6px;}
+  .items span{display:flex; align-items:center; gap:6px; font-size:14.5px; font-weight:700;}
+  .items svg{width:30px; height:30px;}
+  @media (max-width:720px){ .step{grid-template-columns:36px 1fr; gap:10px 12px; padding:14px;} .num{width:36px; height:36px; font-size:18px;} }
+
+  .kbd{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:14px; background:var(--surface); border:1.5px solid var(--line); border-bottom-width:3px; border-radius:7px; padding:0 7px;}
+  code{font-size:14px; background:#EEEDF6; border-radius:6px; padding:1px 6px;}
+
+  /* ---------- Для вчителя ---------- */
+  .teacher{margin-top:28px;}
+  .teacher h2{font-size:24px; margin-bottom:8px;}
+  .card{background:var(--surface); border:1.5px solid var(--line); border-radius:var(--radius-l); padding:18px 20px; margin-top:12px;}
+  .card h3{font-size:18px; margin-bottom:6px;}
+  .card p{margin:6px 0 0; font-size:15px;}
+  .card ul{margin:6px 0 0; padding-left:20px; font-size:15px;}
+  table{border-collapse:collapse; font-size:14.5px; width:100%; margin-top:6px;}
+  th, td{padding:6px 10px; border-bottom:1px solid var(--line); text-align:left;}
+  th{font-family:'Baloo 2',sans-serif; font-weight:600; color:var(--ink-soft);}
+  .table-scroll{overflow-x:auto;}
+
+  footer{margin:36px 0 30px; text-align:center; font-size:13.5px; color:var(--ink-soft);}
+  @media print{ body{background:#fff;} .topbar{display:none;} .step, .card{break-inside:avoid;} }
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="topbar-inner">
+  <a class="back-link" href="../index.html">← До гри</a>
+  <a class="play-link" href="../index.html">🧱 Грати</a>
+</div></div>
+
+<main class="container">
+
+  <header class="hero">
+    <div class="eyebrow">Цеглинки слів · Інструкція</div>
+    <h1>Як грати</h1>
+    <p>Гра для 2–5 класів: збивай цеглинки м'ячиком, лови слова й збирай колекцію предметів. Слова — терміни з інформатики або англійські.</p>
+  </header>
+
+  <ol class="steps">
+    <li class="step">
+      <span class="num">1</span>
+      <div>
+        <h2>Обери гру, клас і рівень</h2>
+        <p>Угорі — «💻 Інформатика» або «🔤 English». Нижче обери свій клас: у грі трапляються слова цього класу й попередніх. Клацни «Легко», «Середньо» чи «Важко» — після відліку 3-2-1 гра почнеться.</p>
+      </div>
+    </li>
+    <li class="step key">
+      <span class="num">2</span>
+      <div>
+        <h2>Відбивай м'ячик дощечкою</h2>
+        <p>Дощечка їде за мишею. Клацни, щоб запустити м'ячик. Кожна збита цеглинка дає бал. Від країв дощечки м'ячик відлітає пологіше, від середини — круто вгору.</p>
+        <p>Можна й клавішами: <span class="kbd">←</span> <span class="kbd">→</span> рухають дощечку, <span class="kbd">↑</span> запускає м'ячик. На планшеті дощечка їде за пальцем.</p>
+      </div>
+    </li>
+    <li class="step key">
+      <span class="num">3</span>
+      <div>
+        <h2>Визволи слово</h2>
+        <p>Серед цеглинок ховається фіолетовий блок <code>?</code>. Його не розбити — у ньому сховане слово. Під ним пунктиром позначено цеглинки, які треба збити. Коли під блоком стане порожньо, слово впаде.</p>
+        <p>Спіймай слово дощечкою, як м'ячик. Воно перетвориться на предмет і потрапить у колекцію: +10 балів, а за предмет, якого ще не було, +15. Якщо слово пролетить повз дощечку, воно втече, і з'явиться наступне.</p>
+      </div>
+    </li>
+    <li class="step">
+      <span class="num">4</span>
+      <div>
+        <h2>Турбо</h2>
+        <p>Кнопка «🚀 Турбо» над полем робить м'ячик швидшим, а за кожну цеглинку дає вдвічі більше балів. Ще раз клацни — і швидкість стане звичайною.</p>
+      </div>
+    </li>
+    <li class="step">
+      <span class="num">5</span>
+      <div>
+        <h2>Встигни, поки йде час</h2>
+        <p>Гра триває 2, 2,5 або 3 хвилини. Якщо м'ячик пролетів повз дощечку, він повертається на неї — втрачається лише час. Коли цеглинки скінчаться, з'явиться нова стіна (+15 балів).</p>
+        <p>Зірки за гру: перша — за одне спіймане слово, друга — за три, третя — за п'ять.</p>
+        <p>Пауза — <span class="kbd">Пробіл</span> або кнопка ⏸. Якщо поле видно не повністю, клацни кнопку зі стрілками вгорі праворуч або натисни <span class="kbd">F11</span>.</p>
+      </div>
+    </li>
+    <li class="step">
+      <span class="num">6</span>
+      <div>
+        <h2>Колекція й майстерня</h2>
+        <p>Кнопка «🎒 Колекція» вгорі показує всі предмети. Клацни спійманий — і побачиш, що означає слово, а англійське можна послухати. Сірі силуети — слова, які ще треба спіймати, замочки — слова, що відкриються за бали.</p>
+        <p>Бали з усіх ігор збираються в скарбничку. За них відкриваються нові слова для колекції, а в майстерні — нове поле, цеглинки й дощечка.</p>
+      </div>
+    </li>
+  </ol>
+
+  <section class="teacher" id="teacher">
+    <h2>Для вчителя</h2>
+
+    <div class="card">
+      <h3>Рівні</h3>
+      <div class="table-scroll"><table>
+        <tr><th></th><th>Час</th><th>Ряди цеглинок</th><th>Міцні цеглинки</th><th>Під блоком ?</th></tr>
+        <tr><td>🟢 Легко</td><td>2 хв</td><td>5</td><td>немає</td><td>1 ряд</td></tr>
+        <tr><td>🟡 Середньо</td><td>2,5 хв</td><td>6</td><td>20%</td><td>2 ряди</td></tr>
+        <tr><td>🔴 Важко</td><td>3 хв</td><td>7</td><td>35%</td><td>2–3 ряди</td></tr>
+      </table></div>
+      <p>Що складніший рівень, то швидший м'ячик і вужча дощечка, а протягом гри м'ячик поступово пришвидшується. Міцна цеглинка темніша, з заклепкою, і розбивається з двох ударів.</p>
+      <p>Під час першого запуску гра питає ім'я учня: бали, рекорди й колекція зберігаються в браузері окремо для кожного імені. Кнопка з ім'ям угорі відкриває список гравців цього комп'ютера.</p>
+    </div>
+
+    <div class="card">
+      <h3>Слова</h3>
+      <p>У кожному режимі по 10 слів на клас, 2–5 класи. Обраний клас показує слова цього класу й попередніх: спершу ті, яких учень ще не спіймав. Перші чотири слова кожного класу відкриті одразу, решта відкриваються за бали в скарбничці (від 60 до 660). В інформатиці картка предмета пояснює термін, в англійській — дає переклад і, якщо в системі є англійський голос, вимовляє слово.</p>
+    </div>
+
+    <div class="card">
+      <h3>Складніші рівні: <code>?boost</code></h3>
+      <p>Додайте <code>?boost</code> у кінці адреси для сильнішого класу: м'ячик швидший, дощечка вужча, рядів і міцних цеглинок більше. Бали й колекція в цьому режимі зберігаються окремо. Під полем дрібним шрифтом видно «Налаштування вчителя: складніші рівні».</p>
+    </div>
+
+    <div class="card">
+      <h3>Звук</h3>
+      <p>За замовчуванням гра зі звуком. Кнопки для учнів немає, вчитель перемикає звук так:</p>
+      <ul>
+        <li><code>?zvuk=tykho</code> у кінці адреси — без звуку, <code>?zvuk=klas</code> — зі звуком; параметр одразу зникає з адреси;</li>
+        <li>або <span class="kbd">Ctrl</span> + <span class="kbd">Alt</span> + <span class="kbd">Z</span> у грі (повторне натискання вмикає назад).</li>
+      </ul>
+      <p>Режим запам'ятовується на цьому комп'ютері. Без звуку гра й не вимовляє англійські слова. Параметри поєднуються: <code>?boost&amp;zvuk=tykho</code>.</p>
+    </div>
+
+    <div class="card">
+      <h3>Без інтернету</h3>
+      <p>Достатньо один раз відкрити гру з інтернетом у Chrome: далі вона відкривається за тією самою адресою й без мережі. Для комп'ютерів, які не бувають онлайн, можна завантажити архів репозиторію, розпакувати й відкрити <code>index.html</code>.</p>
+    </div>
+  </section>
+
+  <footer>Цеглинки слів · Інструкція · у стилі <a href="https://cikavo.me/labs/typing-race/">«Клавіатурних перегонів»</a> з Лабораторії</footer>
+</main>
+
+<script>
+// Офлайн: обробник sw.js зберігає гру в браузері, щоб вона відкривалась без інтернету.
+// Працює лише на сайті (http/https); з папки (file://) гра й так відкривається без мережі
+if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('../sw.js').catch(()=>{});
+</script>
+</body>
+</html>
