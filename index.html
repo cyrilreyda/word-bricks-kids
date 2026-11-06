@@ -1051,7 +1051,7 @@ const PY = H - 46, PH = 16;  // верх дощечки й її товщина
 const TURBO = 1.45;          // у турбо м'ячик у стільки разів швидший, а бали за цеглинки подвоюються
 const WORDS_AT_ONCE = 2;     // скільки слів одночасно ховається серед цеглинок
 const AUTO_LAUNCH = 3;       // м'ячик сам злітає з дощечки через стільки секунд
-const STARS_AT = [2, 4, 7];  // зірки за гру: скільки слів спіймано
+const STARS_AT = [3, 5, 8];  // зірки за гру: скільки слів спіймано
 
 // time — тривалість, с; rows — ряди цеглинок; strong — частка міцних (2 удари), tough — дуже міцних (3 удари);
 // speed — швидкість м'ячика, пікс./с, на початку й наприкінці гри; paddle — ширина дощечки; fall — швидкість падіння слова;
@@ -1155,23 +1155,23 @@ const STICKERS = [
     how:`Зібрати всі 10 слів місії «${list[g].name}» (${MODES[mode]})`,
     test:(r, p)=>ITEMS.filter(it=>it.mode === mode && it.grade === g).every(it=>p.col[mode][it.id]) }))),
   { id:'first',    ico:'🎁', name:'Перша знахідка',   how:'Спіймати перше слово',                              test:(r, p)=>colSize(p) >= 1 },
-  { id:'game3',    ico:'🎯', name:'Влучний ловець',   how:'Спіймати 3 слова за одну гру',                      test:r=>r.words >= 3 },
-  { id:'game5',    ico:'🖐️', name:'П\'ятірочка',      how:'Спіймати 5 слів за одну гру',                       test:r=>r.words >= 5 },
-  { id:'game7',    ico:'🧲', name:'Магніт для слів',  how:'Спіймати 7 слів за одну гру',                       test:r=>r.words >= 7 },
-  { id:'noloss',   ico:'🛡️', name:'Залізна дощечка',  how:'Дограти до кінця, жодного разу не впустивши м\'ячик', test:r=>r.lostBalls === 0 && r.bricks >= 10 },
-  { id:'noescape', ico:'🤲', name:'Нічого не втекло', how:'Спіймати щонайменше 3 слова, і щоб жодне не втекло', test:r=>r.words >= 3 && !r.escaped },
+  { id:'game3',    ico:'🎯', name:'Влучний ловець',   how:'Спіймати 4 слова за одну гру',                      test:r=>r.words >= 4 },
+  { id:'game5',    ico:'🖐️', name:'Спритні руки',     how:'Спіймати 6 слів за одну гру',                       test:r=>r.words >= 6 },
+  { id:'game7',    ico:'🧲', name:'Магніт для слів',  how:'Спіймати 8 слів за одну гру',                       test:r=>r.words >= 8 },
+  { id:'noloss',   ico:'🛡️', name:'Залізна дощечка',  how:'Дограти до кінця, жодного разу не впустивши м\'ячик', test:r=>r.lostBalls === 0 && r.bricks >= 12 },
+  { id:'noescape', ico:'🤲', name:'Нічого не втекло', how:'Спіймати щонайменше 4 слова, і щоб жодне не втекло', test:r=>r.words >= 4 && !r.escaped },
   { id:'stars3',   ico:'🌟', name:'Три зірки',        how:'Отримати 3 зірки за гру',                           test:r=>r.stars === 3 },
   { id:'wall',     ico:'🧱', name:'Будівельник',      how:'Розбити стіну так, щоб з\'явилася нова',           test:r=>r.walls >= 1 },
-  { id:'bricks',   ico:'💥', name:'Руйнівник',        how:'Збити 60 цеглинок за одну гру',                     test:r=>r.bricks >= 60 },
-  { id:'turbo',    ico:'🔥', name:'Турбо',            how:'Грати 60 секунд у турбо за одну гру',               test:r=>r.turboT >= 60 },
+  { id:'bricks',   ico:'💥', name:'Руйнівник',        how:'Збити 72 цеглинки за одну гру',                     test:r=>r.bricks >= 72 },
+  { id:'turbo',    ico:'🔥', name:'Турбо',            how:'Грати 72 секунди в турбо за одну гру',              test:r=>r.turboT >= 72 },
   { id:'hard',     ico:'🔴', name:'Сміливець',        how:'Спіймати слово на рівні «Важко»',                   test:r=>r.level === 'hard' && r.words >= 1 },
-  { id:'col10',    ico:'🎒', name:'Повний рюкзак',    how:'Зібрати в колекцію 10 різних слів',                 test:(r, p)=>colSize(p) >= 10 },
-  { id:'col25',    ico:'📚', name:'Книжкова полиця',  how:'Зібрати в колекцію 25 різних слів',                 test:(r, p)=>colSize(p) >= 25 },
-  { id:'col50',    ico:'🏛️', name:'Музей слів',       how:'Зібрати в колекцію 50 різних слів',                 test:(r, p)=>colSize(p) >= 50 },
+  { id:'col10',    ico:'🎒', name:'Повний рюкзак',    how:'Зібрати в колекцію 12 різних слів',                 test:(r, p)=>colSize(p) >= 12 },
+  { id:'col25',    ico:'📚', name:'Книжкова полиця',  how:'Зібрати в колекцію 30 різних слів',                 test:(r, p)=>colSize(p) >= 30 },
+  { id:'col50',    ico:'🏛️', name:'Музей слів',       how:'Зібрати в колекцію 60 різних слів',                 test:(r, p)=>colSize(p) >= 60 },
   { id:'col80',    ico:'👑', name:'Король колекції',  how:'Зібрати всі 80 слів',                               test:(r, p)=>colSize(p) >= ITEMS.length },
   { id:'both',     ico:'🌍', name:'Поліглот',         how:'Спіймати хоча б по одному слову в «Інформатиці» та в «English»', test:(r, p)=>Object.keys(p.col.info).length > 0 && Object.keys(p.col.en).length > 0 },
-  { id:'rounds',   ico:'🏆', name:'Завзятий гравець', how:'Зіграти 20 ігор',                                   test:(r, p)=>p.rounds >= 20 },
-  { id:'bank',     ico:'💰', name:'Повна скарбничка', how:'Зібрати в скарбничку 1000 балів',                   test:(r, p)=>p.total >= 1000 },
+  { id:'rounds',   ico:'🏆', name:'Завзятий гравець', how:'Зіграти 24 гри',                                    test:(r, p)=>p.rounds >= 24 },
+  { id:'bank',     ico:'💰', name:'Повна скарбничка', how:'Зібрати в скарбничку 1200 балів',                   test:(r, p)=>p.total >= 1200 },
 ];
 const STORE_KEY = BOOST ? 'word-bricks-kids-boost-v1' : 'word-bricks-kids-v1';
 
@@ -2161,13 +2161,15 @@ function placeWord(fresh){
   checkWord();
   return true;
 }
-// М'ячик влучив у блок ?: усі цеглинки під ним розсипаються (з балами, як за збиті), і слово падає
+// М'ячик влучив у блок ?: поштовх б'є всі цеглинки під ним. Звичайні розсипаються (з балами, як за збиті),
+// міцним треба ще один поштовх. Коли під блоком порожньо, слово падає
 function breakFree(w){
   w.shake = .25;
   SFX.stone();
   for(let r = w.r + 1; r < G.grid.length; r++) for(let k = 0; k < 3; k++){
     const c = w.c + k, b = G.grid[r][c];
     if(!b) continue;
+    if(--b.hp > 0){ SFX.dent(); continue; }
     const x = LEFT + c * CW + 2 + BW / 2, y = TOP + r * RH + 2 + BH / 2, pts = b.max * (G.turbo ? 2 : 1);
     G.grid[r][c] = null;
     G.bricks++;
@@ -2176,16 +2178,17 @@ function breakFree(w){
   }
   checkWord();
 }
-// Слово стукає зсередини й вибиває одну цеглинку під собою (без балів)
+// Слово стукає зсередини й б'є одну цеглинку під собою (без балів). Міцна розбивається з двох стуків
 function knock(w){
   const under = [];
   for(let r = w.r + 1; r < G.grid.length; r++) for(let k = 0; k < 3; k++) if(G.grid[r][w.c + k]) under.push([r, w.c + k]);
   if(!under.length) return;
   const [r, c] = pick(under), x = LEFT + c * CW + 2 + BW / 2, y = TOP + r * RH + 2 + BH / 2;
-  G.grid[r][c] = null;
   w.shake = .4;
-  SFX.stone(); SFX.brick(r);
   popText('тук!', w.x + w.w / 2, w.y - 4, false, '#FFC93C');
+  if(--G.grid[r][c].hp > 0){ SFX.stone(); SFX.dent(); return; }
+  G.grid[r][c] = null;
+  SFX.stone(); SFX.brick(r);
   for(let i = 0; i < 7; i++) G.fx.push({ kind:'bit', x, y, vx:(Math.random() - .5) * 260, vy:-Math.random() * 220, t:0, life:.55, col:'#6C5CE7' });
   checkWord();
 }
@@ -2263,19 +2266,24 @@ function draw(){
   drawScene(ctx, { field:chosen('field'), brick:chosen('brick'), paddle:chosen('paddle'), mode:G.mode, grid:G.grid, words:G.slots,
     ball:G.ball, px:G.px, pw:G.pw, t, bg:background() });
   const dark = chosen('field').dark;
+  // Написи й бали малюються останніми, щоб їх не закривали уламки, малюнки й слова
+  for(const f of G.fx.filter(f=>f.kind !== 'text')) drawFx(f);
   if(G.ball.held && G.phase === 'play'){
     ctx.fillStyle = dark ? 'rgba(255,255,255,.85)' : 'rgba(27,27,58,.75)';
     ctx.font = `800 17px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText('Клацни або натисни Enter, щоб запустити м\'ячик', W / 2, PY - 44);
   }
-  for(const f of G.fx){
+  for(const f of G.fx.filter(f=>f.kind === 'text')) drawFx(f);
+}
+function drawFx(f){
+  {
     const p = f.t / f.life;
     if(f.kind === 'bit'){
       ctx.globalAlpha = 1 - p; ctx.fillStyle = f.col; ctx.fillRect(f.x - 3, f.y - 3, 6, 6);
     } else if(f.kind === 'text'){
       ctx.globalAlpha = Math.min(1, 2 * (1 - p));
       ctx.font = `800 ${f.big ? 26 : 18}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(27,27,58,.4)';
+      ctx.lineWidth = 4; ctx.lineJoin = 'round'; ctx.strokeStyle = 'rgba(27,27,58,.6)';
       const y = f.y - p * 46;
       ctx.strokeText(f.text, f.x, y);
       ctx.fillStyle = f.color || (f.minus ? '#FFB3A6' : '#fff');
