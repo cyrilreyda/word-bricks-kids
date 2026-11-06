@@ -58,7 +58,7 @@
   .teacher-note{margin-top:10px; text-align:center; font-size:12.5px; color:var(--ink-soft); opacity:.8;}
   .teacher-note:empty{display:none;}
 
-  /* ---------- Вибір режиму, класу й рівня ---------- */
+  /* ---------- Вибір режиму, місії й рівня ---------- */
   .intro{display:flex; align-items:center; gap:20px;}
   .intro .art{width:120px; flex-shrink:0;}
   .intro h1{font-size:28px; line-height:1.15;}
@@ -75,10 +75,11 @@
   .levels-title{font-size:17px; margin:18px 0 10px;}
   .grades{display:grid; grid-template-columns:repeat(4, 1fr); gap:10px;}
   @media (max-width:640px){ .grades{grid-template-columns:repeat(2, 1fr);} }
-  .grade{display:flex; flex-direction:column; align-items:center; border:1.5px solid var(--line); background:var(--surface); border-radius:var(--radius-m); padding:8px 6px; cursor:pointer; transition:all .15s ease;}
+  .grade{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; border:1.5px solid var(--line); background:var(--surface); border-radius:var(--radius-m); padding:8px 6px; cursor:pointer; text-align:center; transition:all .15s ease;}
   .grade:hover{border-color:var(--teal); transform:translateY(-2px);}
   .grade.on{background:#E3F7F6; border-color:var(--teal); box-shadow:0 0 0 2px var(--teal);}
-  .grade b{font-family:'Baloo 2','Nunito Sans',sans-serif; font-weight:800; font-size:22px; line-height:1.2;}
+  .grade small{font-family:'Baloo 2','Nunito Sans',sans-serif; font-weight:700; font-size:12.5px; color:var(--teal-dark); text-transform:uppercase; letter-spacing:.04em;}
+  .grade b{font-family:'Baloo 2','Nunito Sans',sans-serif; font-weight:800; font-size:16.5px; line-height:1.2;}
   .grade span{font-size:12.5px; font-weight:700; color:var(--ink-soft);}
   .levels{display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;}
   @media (max-width:640px){ .levels{grid-template-columns:1fr;} }
@@ -169,6 +170,18 @@
   .unlock-item{display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700;}
   .unlock-item img{width:50px; height:28px; border-radius:5px;}
   .unlock-item svg{width:34px; height:34px;}
+
+  /* ---------- Наліпки ---------- */
+  .stickers-box{margin-top:20px; padding-top:16px; border-top:1.5px dashed var(--line);}
+  .stickers-box h4{font-size:14px; color:var(--ink-soft); margin:12px 0 0;}
+  .stickers{display:grid; grid-template-columns:repeat(auto-fill, minmax(92px, 1fr)); gap:8px; margin-top:8px;}
+  .sticker{display:flex; flex-direction:column; align-items:center; gap:3px; text-align:center; cursor:pointer; font-family:'Baloo 2','Nunito Sans',sans-serif; font-weight:700; font-size:12.5px; line-height:1.15;}
+  .sticker .st-ico{width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:27px;
+    background:radial-gradient(circle at 35% 30%, #FFFFFF, #FFF1C2); border:3px solid #FFC93C; box-shadow:0 3px 0 #E0A800;}
+  .sticker.no{color:var(--ink-soft); font-weight:600;}
+  .sticker.no .st-ico{background:var(--bg); border:2px dashed var(--line); box-shadow:none;}
+  .sticker.no .st-ico span{filter:grayscale(1); opacity:.3;}
+  .unlock .sticker{width:92px;}
 
   /* ---------- Гравці ---------- */
   .player-btn{margin-left:auto; display:inline-flex; align-items:center; gap:6px; max-width:200px; overflow:hidden;}
@@ -269,7 +282,7 @@
 
 <main class="container">
 
-  <!-- Вибір режиму, класу й рівня -->
+  <!-- Вибір режиму, місії й рівня -->
   <section class="panel" id="setup">
     <div class="intro">
       <svg class="art" viewBox="0 0 120 100" aria-hidden="true">
@@ -296,7 +309,7 @@
       <button class="mode" type="button" data-mode="info">💻 Інформатика <small id="modeInfoN"></small></button>
       <button class="mode" type="button" data-mode="en">🔤 English <small id="modeEnN"></small></button>
     </div>
-    <h3 class="levels-title">Обери клас</h3>
+    <h3 class="levels-title">Обери місію</h3>
     <div class="grades" id="grades"></div>
     <h3 class="levels-title">Обери рівень — і гра почнеться</h3>
     <div class="levels" id="levels"></div>
@@ -311,6 +324,11 @@
       <div class="g-row"><h4>Поле</h4><div class="picks" id="fieldPicks"></div></div>
       <div class="g-row"><h4>Цеглинки</h4><div class="picks" id="brickPicks"></div></div>
       <div class="g-row"><h4>Дощечка</h4><div class="picks" id="paddlePicks"></div></div>
+    </div>
+    <div class="stickers-box">
+      <div class="garage-head"><h3>Наліпки</h3><span class="next-goal" id="stickerCount"></span></div>
+      <h4>За місії</h4><div class="stickers" id="stickersMission"></div>
+      <h4>За гру</h4><div class="stickers" id="stickersGame"></div>
     </div>
     <div class="teacher-note"></div>
   </section>
@@ -425,7 +443,7 @@
       <path d="M20.5 28.5q3.5 3 7 0" fill="none" stroke="#8A6200" stroke-width="2" stroke-linecap="round"/>
     </symbol>
 
-    <!-- ===== Інформатика · 2 клас ===== -->
+    <!-- ===== Інформатика · місія 1 ===== -->
     <symbol id="w-computer" viewBox="0 0 48 48">
       <rect x="2" y="6" width="30" height="22" rx="2.5" fill="#3A3A58" stroke="#1B1B3A" stroke-width="2"/>
       <rect x="5" y="9" width="24" height="16" rx="1" fill="#2D9CDB"/>
@@ -510,7 +528,7 @@
       <rect x="21" y="42" width="6" height="1.8" rx=".9" fill="#6E6C8A"/>
     </symbol>
 
-    <!-- ===== Інформатика · 3 клас ===== -->
+    <!-- ===== Інформатика · місія 2 ===== -->
     <symbol id="w-laptop" viewBox="0 0 48 48">
       <rect x="8" y="7" width="32" height="23" rx="2.5" fill="#3A3A58" stroke="#1B1B3A" stroke-width="2"/>
       <rect x="11" y="10" width="26" height="17" rx="1" fill="#16A3A0"/>
@@ -577,7 +595,7 @@
       <circle cx="8.5" cy="33.6" r="1.5" fill="#3DBE6B"/>
     </symbol>
 
-    <!-- ===== Інформатика · 4 клас ===== -->
+    <!-- ===== Інформатика · місія 3 ===== -->
     <symbol id="w-info" viewBox="0 0 48 48">
       <circle cx="24" cy="24" r="20" fill="#2D9CDB" stroke="#1B6FA8" stroke-width="2.5"/>
       <circle cx="24" cy="14" r="3.4" fill="#fff"/>
@@ -643,7 +661,7 @@
       <path d="M39.6 34v2.8a1.7 1.7 0 0 0 3.4 0V36a6 6 0 1 0-2.6 5" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/>
     </symbol>
 
-    <!-- ===== Інформатика · 5 клас ===== -->
+    <!-- ===== Інформатика · місія 4 ===== -->
     <symbol id="w-cpu" viewBox="0 0 48 48">
       <path d="M16 3v7M24 3v7M32 3v7M16 38v7M24 38v7M32 38v7M3 16h7M3 24h7M3 32h7M38 16h7M38 24h7M38 32h7" stroke="#E0A800" stroke-width="2.6" stroke-linecap="round"/>
       <rect x="9" y="9" width="30" height="30" rx="3" fill="#3A3A58" stroke="#1B1B3A" stroke-width="2"/>
@@ -712,7 +730,7 @@
       <path d="M8 30h32" stroke="#514F72" stroke-width="1.8"/>
     </symbol>
 
-    <!-- ===== English · 2 клас ===== -->
+    <!-- ===== English · місія 1 ===== -->
     <symbol id="w-cat" viewBox="0 0 48 48">
       <path d="M9 21L8 4l11 9M39 21l1-17-11 9" fill="#FF9F43" stroke="#C9452A" stroke-width="2" stroke-linejoin="round"/>
       <path d="M11 15l-.5-6.5 5.5 4.5M37 15l.5-6.5-5.5 4.5" fill="#FFB3C7"/>
@@ -787,7 +805,7 @@
       <circle cx="35" cy="34" r="5.2" fill="#1B1B3A"/><circle cx="35" cy="34" r="2" fill="#C9C7D9"/>
     </symbol>
 
-    <!-- ===== English · 3 клас ===== -->
+    <!-- ===== English · місія 2 ===== -->
     <symbol id="w-house" viewBox="0 0 48 48">
       <rect x="32" y="7" width="5.5" height="10" fill="#9A6B3A"/>
       <rect x="9" y="21" width="30" height="23" fill="#FFC93C" stroke="#E0A800" stroke-width="2"/>
@@ -857,7 +875,7 @@
       <circle cx="33" cy="14.5" r="1.9" fill="#1B1B3A"/>
     </symbol>
 
-    <!-- ===== English · 4 клас ===== -->
+    <!-- ===== English · місія 3 ===== -->
     <symbol id="w-elephant" viewBox="0 0 48 48">
       <path d="M20 28c0 8 1 14 6 15 3 0 4-2 3-4-2 0-3-2-3-5v-6z" fill="#B7B4CC" stroke="#6E6A88" stroke-width="2" stroke-linejoin="round"/>
       <circle cx="10" cy="19" r="9" fill="#9A97B0" stroke="#6E6A88" stroke-width="2"/><circle cx="10" cy="19" r="5" fill="#FFB3C7"/>
@@ -933,7 +951,7 @@
       <ellipse cx="27" cy="16.5" rx="2.6" ry="1.4" fill="#E0A800"/>
     </symbol>
 
-    <!-- ===== English · 5 клас ===== -->
+    <!-- ===== English · місія 4 ===== -->
     <symbol id="w-strawberry" viewBox="0 0 48 48">
       <path d="M24 12.5c-10-2-19 4-17 13 2 9 10 17 17 19 7-2 15-10 17-19 2-9-7-15-17-13z" fill="#E8453C" stroke="#B5281F" stroke-width="2" stroke-linejoin="round"/>
       <g fill="#FFE14D"><ellipse cx="17" cy="21" rx="1.1" ry="1.6"/><ellipse cx="24" cy="20" rx="1.1" ry="1.6"/><ellipse cx="31" cy="21" rx="1.1" ry="1.6"/><ellipse cx="13.5" cy="28" rx="1.1" ry="1.6"/><ellipse cx="20.5" cy="27" rx="1.1" ry="1.6"/><ellipse cx="27.5" cy="27" rx="1.1" ry="1.6"/><ellipse cx="34.5" cy="28" rx="1.1" ry="1.6"/><ellipse cx="18" cy="34" rx="1.1" ry="1.6"/><ellipse cx="24.5" cy="34" rx="1.1" ry="1.6"/><ellipse cx="31" cy="34" rx="1.1" ry="1.6"/><ellipse cx="24" cy="40" rx="1.1" ry="1.6"/></g>
@@ -1022,7 +1040,7 @@
 
 <script>
 /* ================= Налаштування ================= */
-// ?boost — складніші рівні для сильніших класів: швидший м'ячик, вужча дощечка, більше міцних цеглинок
+// ?boost — складніші рівні для сильніших учнів: швидший м'ячик, вужча дощечка, більше міцних цеглинок
 const BOOST = new URLSearchParams(location.search).has('boost');
 
 // Поле в логічних пікселях; на екрані канва масштабується під вікно
@@ -1032,27 +1050,36 @@ const R = 9;                 // радіус м'ячика
 const PY = H - 46, PH = 16;  // верх дощечки й її товщина
 const TURBO = 1.45;          // у турбо м'ячик у стільки разів швидший, а бали за цеглинки подвоюються
 const AUTO_LAUNCH = 3;       // м'ячик сам злітає з дощечки через стільки секунд
-const STARS_AT = [1, 3, 5];  // зірки за гру: скільки слів спіймано
+const STARS_AT = [1, 2, 4];  // зірки за гру: скільки слів спіймано
 
 // time — тривалість, с; rows — ряди цеглинок; strong — частка міцних (2 удари), tough — дуже міцних (3 удари);
 // speed — швидкість м'ячика, пікс./с, на початку й наприкінці гри; paddle — ширина дощечки; fall — швидкість падіння слова;
-// depth — скільки рядів цеглинок під блоком ? на початку, spread — на скільки рядів вище він може опинитися
+// depth — скільки рядів цеглинок під блоком ? (1 — другий ряд знизу), spread — на скільки рядів вище він може опинитися;
+// knock — слово, що довго сидить у схованці, саме вибиває цеглинку під собою: уперше через стільки секунд, далі — кожні стільки
 const LEVELS = BOOST ? {
-  easy: { name:'Легко',    ico:'🟢', info:'2 хв · швидкий м\'ячик',   time:120, rows:6, strong:.2,  tough:0,   speed:[380, 440], paddle:115, fall:150, depth:2, spread:0 },
-  mid:  { name:'Середньо', ico:'🟡', info:'2,5 хв · міцні цеглинки', time:150, rows:7, strong:.35, tough:.05, speed:[440, 520], paddle:98,  fall:180, depth:2, spread:1 },
-  hard: { name:'Важко',    ico:'🔴', info:'3 хв · вузька дощечка',  time:180, rows:8, strong:.45, tough:.15, speed:[500, 590], paddle:82,  fall:210, depth:3, spread:1 },
+  easy: { name:'Легко',    ico:'🟢', info:'2 хв · швидкий м\'ячик',   time:120, rows:6, strong:.2,  tough:0,   speed:[380, 440], paddle:115, fall:150, depth:1, spread:1, knock:[25, 12] },
+  mid:  { name:'Середньо', ico:'🟡', info:'2,5 хв · міцні цеглинки', time:150, rows:7, strong:.35, tough:.05, speed:[440, 520], paddle:98,  fall:180, depth:1, spread:1, knock:[30, 15] },
+  hard: { name:'Важко',    ico:'🔴', info:'3 хв · вузька дощечка',  time:180, rows:8, strong:.45, tough:.15, speed:[500, 590], paddle:82,  fall:210, depth:2, spread:0, knock:[35, 15] },
 } : {
-  easy: { name:'Легко',    ico:'🟢', info:'2 хв · повільний м\'ячик', time:120, rows:5, strong:0,   tough:0,   speed:[330, 390], paddle:140, fall:105, depth:1, spread:0 },
-  mid:  { name:'Середньо', ico:'🟡', info:'2,5 хв · міцні цеглинки', time:150, rows:6, strong:.2,  tough:0,   speed:[380, 440], paddle:120, fall:130, depth:2, spread:0 },
-  hard: { name:'Важко',    ico:'🔴', info:'3 хв · швидкий м\'ячик',   time:180, rows:7, strong:.35, tough:0,   speed:[430, 500], paddle:100, fall:160, depth:2, spread:1 },
+  easy: { name:'Легко',    ico:'🟢', info:'2 хв · повільний м\'ячик', time:120, rows:5, strong:0,   tough:0,   speed:[330, 390], paddle:140, fall:105, depth:1, spread:0, knock:[20, 10] },
+  mid:  { name:'Середньо', ico:'🟡', info:'2,5 хв · міцні цеглинки', time:150, rows:6, strong:.2,  tough:0,   speed:[380, 440], paddle:120, fall:130, depth:1, spread:1, knock:[30, 12] },
+  hard: { name:'Важко',    ico:'🔴', info:'3 хв · швидкий м\'ячик',   time:180, rows:7, strong:.35, tough:0,   speed:[430, 500], paddle:100, fall:160, depth:1, spread:1, knock:[35, 15] },
 };
-const GRADES = [2, 3, 4, 5];
+const GRADES = [2, 3, 4, 5];   // місії 1–4; у коді вони позначені номерами класів, для яких дібрано слова
 const MODES = { info:'💻 Інформатика', en:'🔤 English' };
+// Назви місій: учні старших класів обирають місію, а не «молодший клас»
+const MISSIONS = {
+  info: { 2:{ ico:'🖥️', name:"Розбуди комп'ютер" }, 3:{ ico:'💾', name:'Загублена флешка' }, 4:{ ico:'🔐', name:'Таємний пароль' }, 5:{ ico:'🦠', name:'Атака вірусів' } },
+  en:   { 2:{ ico:'🐟', name:'Кіт ловить рибку' }, 3:{ ico:'🦆', name:'Качка на велосипеді' }, 4:{ ico:'🐘', name:'Слон під парасолькою' }, 5:{ ico:'🐬', name:'Дельфін на гелікоптері' } },
+};
+const missionNo = g=>GRADES.indexOf(g) + 1;
+const missionName = (mode, g)=>`«${MISSIONS[mode][g].name}»`;
 
 // Слова колекції. Малюнок кожного — <symbol id="w-…"> у розмітці.
 // Інформатика: [малюнок, термін, пояснення]; English: [малюнок, слово, переклад].
-// У кожному класі 10 слів. Перші чотири відкриті одразу, решта — за бали зі скарбнички (WORD_AT, за порядком у списку)
-const WORD_AT = [0, 0, 0, 0, 60, 140, 240, 360, 500, 660];
+// Ключ — номер класу, для якого дібрано слова (у грі це місії 1–4, MISSIONS). У кожній місії 10 слів.
+// Перші чотири відкриті одразу, решта — за бали зі скарбнички (WORD_AT, за порядком у списку)
+const WORD_AT = [0, 0, 0, 0, 40, 100, 170, 250, 350, 460];
 const WORDS = {
   info: {
     2: [
@@ -1119,13 +1146,39 @@ const WORDS = {
 const ITEMS = Object.entries(WORDS).flatMap(([mode, grades])=>Object.entries(grades).flatMap(([grade, list])=>list.map(([id, w, x], i)=>
   ({ id, mode, grade:+grade, w, [mode === 'en' ? 't' : 'd']:x, at:WORD_AT[i] }))));
 const ITEM = Object.fromEntries(ITEMS.map(it=>[it.id, it]));
+// Наліпки. r — підсумок гри, p — профіль гравця після гри.
+// За місію — коли зібрано всі її 10 слів; решта — за досягнення в одній грі або за колекцію загалом
+const colSize = p=>Object.keys(p.col.info).length + Object.keys(p.col.en).length;
+const STICKERS = [
+  ...Object.entries(MISSIONS).flatMap(([mode, list])=>GRADES.map(g=>({ id:`m-${mode}-${g}`, kind:'mission', ico:list[g].ico, name:list[g].name,
+    how:`Зібрати всі 10 слів місії «${list[g].name}» (${MODES[mode]})`,
+    test:(r, p)=>ITEMS.filter(it=>it.mode === mode && it.grade === g).every(it=>p.col[mode][it.id]) }))),
+  { id:'first',    ico:'🎁', name:'Перша знахідка',   how:'Спіймати перше слово',                              test:(r, p)=>colSize(p) >= 1 },
+  { id:'game3',    ico:'🎯', name:'Влучний ловець',   how:'Спіймати 3 слова за одну гру',                      test:r=>r.words >= 3 },
+  { id:'game5',    ico:'🖐️', name:'П\'ятірочка',      how:'Спіймати 5 слів за одну гру',                       test:r=>r.words >= 5 },
+  { id:'game7',    ico:'🧲', name:'Магніт для слів',  how:'Спіймати 7 слів за одну гру',                       test:r=>r.words >= 7 },
+  { id:'noloss',   ico:'🛡️', name:'Залізна дощечка',  how:'Дограти до кінця, жодного разу не впустивши м\'ячик', test:r=>r.lostBalls === 0 && r.bricks >= 10 },
+  { id:'noescape', ico:'🤲', name:'Нічого не втекло', how:'Спіймати щонайменше 3 слова, і щоб жодне не втекло', test:r=>r.words >= 3 && !r.escaped },
+  { id:'stars3',   ico:'🌟', name:'Три зірки',        how:'Отримати 3 зірки за гру',                           test:r=>r.stars === 3 },
+  { id:'wall',     ico:'🧱', name:'Будівельник',      how:'Розбити стіну так, щоб з\'явилася нова',           test:r=>r.walls >= 1 },
+  { id:'bricks',   ico:'💥', name:'Руйнівник',        how:'Збити 60 цеглинок за одну гру',                     test:r=>r.bricks >= 60 },
+  { id:'turbo',    ico:'🔥', name:'Турбо',            how:'Грати 60 секунд у турбо за одну гру',               test:r=>r.turboT >= 60 },
+  { id:'hard',     ico:'🔴', name:'Сміливець',        how:'Спіймати слово на рівні «Важко»',                   test:r=>r.level === 'hard' && r.words >= 1 },
+  { id:'col10',    ico:'🎒', name:'Повний рюкзак',    how:'Зібрати в колекцію 10 різних слів',                 test:(r, p)=>colSize(p) >= 10 },
+  { id:'col25',    ico:'📚', name:'Книжкова полиця',  how:'Зібрати в колекцію 25 різних слів',                 test:(r, p)=>colSize(p) >= 25 },
+  { id:'col50',    ico:'🏛️', name:'Музей слів',       how:'Зібрати в колекцію 50 різних слів',                 test:(r, p)=>colSize(p) >= 50 },
+  { id:'col80',    ico:'👑', name:'Король колекції',  how:'Зібрати всі 80 слів',                               test:(r, p)=>colSize(p) >= ITEMS.length },
+  { id:'both',     ico:'🌍', name:'Поліглот',         how:'Спіймати хоча б по одному слову в «Інформатиці» та в «English»', test:(r, p)=>Object.keys(p.col.info).length > 0 && Object.keys(p.col.en).length > 0 },
+  { id:'rounds',   ico:'🏆', name:'Завзятий гравець', how:'Зіграти 20 ігор',                                   test:(r, p)=>p.rounds >= 20 },
+  { id:'bank',     ico:'💰', name:'Повна скарбничка', how:'Зібрати в скарбничку 1000 балів',                   test:(r, p)=>p.total >= 1000 },
+];
 const STORE_KEY = BOOST ? 'word-bricks-kids-boost-v1' : 'word-bricks-kids-v1';
 
 /* ================= Збереження ================= */
 // Гравці на цьому пристрої: { current, players:{ ім'я: профіль } }.
-// Профіль: best — рекорди (ключ «режим-клас-рівень»); total — скарбничка; rounds — ігор; col — колекція { info:{ id:скільки разів }, en:{…} };
-// mode, grade — останній вибір; field, brick, paddle — вибір у майстерні
-const newProfile = ()=>({ best:{}, total:0, rounds:0, col:{ info:{}, en:{} }, mode:'info', grade:2 });
+// Профіль: best — рекорди (ключ «режим-місія-рівень», місія — номером класу); total — скарбничка; rounds — ігор; col — колекція { info:{ id:скільки разів }, en:{…} };
+// stickers — наліпки; mode, grade — останній вибір режиму й місії; field, brick, paddle — вибір у майстерні
+const newProfile = ()=>({ best:{}, total:0, rounds:0, col:{ info:{}, en:{} }, stickers:{}, mode:'info', grade:2 });
 let db = { current:null, players:{} };
 try{
   const s = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
@@ -1137,6 +1190,7 @@ function save(){ if(player) try{ localStorage.setItem(STORE_KEY, JSON.stringify(
 function loadPlayer(name){
   const p = Object.assign(newProfile(), db.players[name] || {});
   p.col = Object.assign({ info:{}, en:{} }, p.col);
+  p.stickers = p.stickers || {};
   store = db.players[name] = p;
   player = db.current = name;
   save();
@@ -1295,7 +1349,7 @@ function picImg(id){
 
 /* ================= Майстерня: поле, цеглинки, дощечка ================= */
 // Бали з усіх ігор складаються в скарбничку (store.total). За неї відкриваються нові слова (WORD_AT) і оформлення:
-// at — скільки балів потрібно. Гра на «Легко» дає приблизно 60–120 балів
+// at — скільки балів потрібно. Гра на «Легко» дає приблизно 100–160 балів
 // Поле: draw малює тло на всю канву W×H; dark — темне тло (написи на ньому білі)
 const FIELDS = [
   { id:'board', name:'Шкільна дошка', ico:'🟩', at:0, dark:true, draw:c=>{
@@ -1306,7 +1360,7 @@ const FIELDS = [
     c.fillStyle = 'rgba(255,255,255,.08)'; c.font = `700 34px ${FONT}`; c.textAlign = 'center';
     ['А Б В', '2 + 3 = 5', 'a b c', '0 1 1 0 1'].forEach((s, i)=>c.fillText(s, 140 + (i % 2) * 320, 330 + i * 70));
   } },
-  { id:'paper', name:'Зошит', ico:'📓', at:100, dark:false, draw:c=>{
+  { id:'paper', name:'Зошит', ico:'📓', at:70, dark:false, draw:c=>{
     c.fillStyle = '#FDFCF7'; c.fillRect(0, 0, W, H);
     c.strokeStyle = 'rgba(45,156,219,.22)'; c.lineWidth = 1;
     c.beginPath();
@@ -1315,7 +1369,7 @@ const FIELDS = [
     c.stroke();
     c.strokeStyle = 'rgba(232,69,60,.45)'; c.lineWidth = 2; c.beginPath(); c.moveTo(W - 36, 0); c.lineTo(W - 36, H); c.stroke();
   } },
-  { id:'sky', name:'Небо', ico:'☁️', at:250, dark:false, draw:c=>{
+  { id:'sky', name:'Небо', ico:'☁️', at:180, dark:false, draw:c=>{
     const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#4FB3EE'); g.addColorStop(1, '#D9F2FF');
     c.fillStyle = g; c.fillRect(0, 0, W, H);
     c.fillStyle = 'rgba(255,255,255,.8)';
@@ -1324,7 +1378,7 @@ const FIELDS = [
       c.fillRect(x, y - 2, s * 2, s * .8);
     }
   } },
-  { id:'sea', name:'Море', ico:'🐠', at:450, dark:true, draw:c=>{
+  { id:'sea', name:'Море', ico:'🐠', at:320, dark:true, draw:c=>{
     const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#1FA2B8'); g.addColorStop(1, '#0B3D5C');
     c.fillStyle = g; c.fillRect(0, 0, W, H);
     c.fillStyle = 'rgba(255,255,255,.05)';
@@ -1335,7 +1389,7 @@ const FIELDS = [
     c.strokeStyle = 'rgba(61,190,107,.5)'; c.lineWidth = 6; c.lineCap = 'round';
     for(const x of [30, 52, 560, 580]){ c.beginPath(); c.moveTo(x, H); c.quadraticCurveTo(x - 16, H - 50, x + 4, H - 90); c.stroke(); }
   } },
-  { id:'code', name:'Код', ico:'💻', at:700, dark:true, draw:c=>{
+  { id:'code', name:'Код', ico:'💻', at:490, dark:true, draw:c=>{
     c.fillStyle = '#10131F'; c.fillRect(0, 0, W, H);
     const r = rng(3);
     c.font = '600 16px Consolas, monospace'; c.textAlign = 'center';
@@ -1344,7 +1398,7 @@ const FIELDS = [
       c.fillText(r() < .5 ? '0' : '1', x, y);
     }
   } },
-  { id:'space', name:'Космос', ico:'🚀', at:1000, dark:true, draw:c=>{
+  { id:'space', name:'Космос', ico:'🚀', at:700, dark:true, draw:c=>{
     const g = c.createRadialGradient(W * .3, H * .3, 40, W * .5, H * .5, H);
     g.addColorStop(0, '#3A2A6E'); g.addColorStop(1, '#120C2E');
     c.fillStyle = g; c.fillRect(0, 0, W, H);
@@ -1354,7 +1408,7 @@ const FIELDS = [
     c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 4; c.beginPath(); c.ellipse(505, 560, 72, 16, -.3, 0, 7); c.stroke();
     c.fillStyle = '#7FE7FF'; c.beginPath(); c.arc(80, 430, 14, 0, 7); c.fill();
   } },
-  { id:'candy', name:'Цукерки', ico:'🍭', at:1500, dark:false, draw:c=>{
+  { id:'candy', name:'Цукерки', ico:'🍭', at:1050, dark:false, draw:c=>{
     c.fillStyle = '#FFE3EE'; c.fillRect(0, 0, W, H);
     c.save(); c.rotate(-.5); c.fillStyle = 'rgba(255,255,255,.6)';
     for(let x = -H; x < W + H; x += 56) c.fillRect(x, -H, 26, H * 3);
@@ -1376,27 +1430,27 @@ const BRICKS = [
   { id:'color', name:'Кольорові', at:0, draw:(c, x, y, w, h, b)=>{
     rrect(c, x, y, w, h, 5); c.fillStyle = ROWC[b.r % 8]; c.fill(); gloss(c, x, y, w, h);
   } },
-  { id:'brick', name:'Цеглини', at:150, draw:(c, x, y, w, h, b)=>{
+  { id:'brick', name:'Цеглини', at:100, draw:(c, x, y, w, h, b)=>{
     c.fillStyle = '#E9D8C4'; c.fillRect(x, y, w, h);
     c.fillStyle = ['#C8553D', '#B5482F', '#D2694A'][(b.r + b.c) % 3];
     const h2 = h / 2;
     c.fillRect(x + 1, y + 1, w / 2 - 2, h2 - 2); c.fillRect(x + w / 2 + 1, y + 1, w / 2 - 2, h2 - 2);
     c.fillRect(x + 1, y + h2 + 1, w / 4 - 2, h2 - 2); c.fillRect(x + w / 4 + 1, y + h2 + 1, w / 2 - 2, h2 - 2); c.fillRect(x + w * .75 + 1, y + h2 + 1, w / 4 - 2, h2 - 2);
   } },
-  { id:'keys', name:'Клавіші', at:350, draw:(c, x, y, w, h, b)=>{
+  { id:'keys', name:'Клавіші', at:250, draw:(c, x, y, w, h, b)=>{
     rrect(c, x, y, w, h, 5); c.fillStyle = '#B9B6CC'; c.fill();
     rrect(c, x + 2, y + 1, w - 4, h - 5, 4); c.fillStyle = '#FFFFFF'; c.fill();
     const row = KEYROWS[b.mode || 'info'][b.r % 3];
     c.fillStyle = shade(ROWC[b.r % 8], -.2); c.font = `800 13px ${FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle';
     c.fillText(row[b.c % row.length], x + w / 2, y + h / 2 - 1.5);
   } },
-  { id:'candy', name:'Смугасті', at:600, draw:(c, x, y, w, h, b)=>{
+  { id:'candy', name:'Смугасті', at:420, draw:(c, x, y, w, h, b)=>{
     rrect(c, x, y, w, h, 6); c.fillStyle = ROWC[b.r % 8]; c.fill();
     c.save(); c.clip(); c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 5;
     c.beginPath(); for(let k = -h; k < w; k += 13){ c.moveTo(x + k, y + h); c.lineTo(x + k + h, y); } c.stroke();
     c.restore(); gloss(c, x, y, w, h);
   } },
-  { id:'gem', name:'Кристали', at:900, draw:(c, x, y, w, h, b)=>{
+  { id:'gem', name:'Кристали', at:630, draw:(c, x, y, w, h, b)=>{
     const col = ROWC[b.r % 8], g = c.createLinearGradient(x, y, x, y + h);
     g.addColorStop(0, shade(col, .55)); g.addColorStop(1, shade(col, -.2));
     c.beginPath(); c.moveTo(x + 7, y); c.lineTo(x + w - 7, y); c.lineTo(x + w, y + h / 2); c.lineTo(x + w - 7, y + h); c.lineTo(x + 7, y + h); c.lineTo(x, y + h / 2); c.closePath();
@@ -1405,14 +1459,14 @@ const BRICKS = [
     c.beginPath(); c.moveTo(x + 7, y); c.lineTo(x + 15, y + h / 2); c.lineTo(x + 7, y + h); c.moveTo(x + w - 7, y); c.lineTo(x + w - 15, y + h / 2); c.lineTo(x + w - 7, y + h);
     c.moveTo(x + 15, y + h / 2); c.lineTo(x + w - 15, y + h / 2); c.stroke();
   } },
-  { id:'pixel', name:'Пікселі', at:1300, draw:(c, x, y, w, h, b)=>{
+  { id:'pixel', name:'Пікселі', at:910, draw:(c, x, y, w, h, b)=>{
     const col = ROWC[b.r % 8], tones = [col, shade(col, .3), shade(col, -.18)], pw = w / 9, ph = h / 3;
     for(let i = 0; i < 9; i++) for(let j = 0; j < 3; j++){
       c.fillStyle = tones[(i * 2 + j + b.c) % 3];
       c.fillRect(Math.floor(x + i * pw), Math.floor(y + j * ph), Math.ceil(pw), Math.ceil(ph));
     }
   } },
-  { id:'rainbow', name:'Веселка', at:1800, draw:(c, x, y, w, h, b)=>{
+  { id:'rainbow', name:'Веселка', at:1260, draw:(c, x, y, w, h, b)=>{
     rrect(c, x, y, w, h, 5); c.fillStyle = `hsl(${(b.c * 36 + b.r * 14) % 360}, 82%, 60%)`; c.fill(); gloss(c, x, y, w, h);
   } },
 ];
@@ -1439,7 +1493,7 @@ function plainPad(c, x, y, w, h, fill){
 const PADDLES = [
   { id:'teal', name:'Бірюзова', at:0, draw:(c, x, y, w, h)=>plainPad(c, x, y, w, h, '#16A3A0') },
   { id:'coral', name:'Коралова', at:0, draw:(c, x, y, w, h)=>plainPad(c, x, y, w, h, '#FF6B4A') },
-  { id:'pencil', name:'Олівець', at:120, draw:(c, x, y, w, h)=>{
+  { id:'pencil', name:'Олівець', at:85, draw:(c, x, y, w, h)=>{
     rrect(c, x, y, 16, h, 6); c.fillStyle = '#FF8FAB'; c.fill();
     c.fillStyle = '#C9C7D9'; c.fillRect(x + 12, y, 8, h);
     c.fillStyle = '#FFC93C'; c.fillRect(x + 20, y, w - 38, h);
@@ -1447,31 +1501,34 @@ const PADDLES = [
     c.fillStyle = '#F6E2C8'; c.beginPath(); c.moveTo(x + w - 18, y); c.lineTo(x + w, y + h / 2); c.lineTo(x + w - 18, y + h); c.fill();
     c.fillStyle = '#1B1B3A'; c.beginPath(); c.moveTo(x + w - 7, y + h * .3); c.lineTo(x + w, y + h / 2); c.lineTo(x + w - 7, y + h * .7); c.fill();
   } },
-  { id:'keyboard', name:'Клавіатура', at:300, draw:(c, x, y, w, h)=>{
+  { id:'keyboard', name:'Клавіатура', at:210, draw:(c, x, y, w, h)=>{
     rrect(c, x, y, w, h, 4); c.fillStyle = '#514F72'; c.fill(); c.lineWidth = 2; c.strokeStyle = '#fff'; c.stroke();
     c.fillStyle = '#F6F5FB';
     const n = Math.floor((w - 8) / 10);
     for(let i = 0; i < n; i++){ c.fillRect(x + 5 + i * 10, y + 3, 7, 4); if(i > 1 && i < n - 2) c.fillRect(x + 5 + i * 10, y + 9, 7, 4); }
   } },
-  { id:'rainbow', name:'Веселка', at:500, draw:(c, x, y, w, h)=>{
+  { id:'rainbow', name:'Веселка', at:350, draw:(c, x, y, w, h)=>{
     const g = c.createLinearGradient(x, 0, x + w, 0);
     ['#E8453C', '#FF9F43', '#FFC93C', '#3DBE6B', '#2D9CDB', '#6C5CE7'].forEach((col, i)=>g.addColorStop(i / 5, col));
     plainPad(c, x, y, w, h, g);
   } },
-  { id:'rocket', name:'Ракета', at:800, draw:(c, x, y, w, h, t = 0)=>{
-    const f = 8 + Math.sin(t * 30) * 3;
-    c.fillStyle = '#FF9F43'; c.beginPath(); c.moveTo(x + 8, y + 3); c.lineTo(x + 8 - f, y + h / 2); c.lineTo(x + 8, y + h - 3); c.fill();
-    c.fillStyle = '#E8453C'; c.beginPath(); c.moveTo(x + 8, y - 4); c.lineTo(x + 22, y + 2); c.lineTo(x + 22, y + h - 2); c.lineTo(x + 8, y + h + 4); c.fill();
-    rrect(c, x + 8, y, w - 26, h, 5); c.fillStyle = '#F6F5FB'; c.fill(); c.lineWidth = 1.5; c.strokeStyle = '#9A97B0'; c.stroke();
-    c.fillStyle = '#E8453C'; c.beginPath(); c.moveTo(x + w - 19, y); c.quadraticCurveTo(x + w, y + 1, x + w, y + h / 2); c.quadraticCurveTo(x + w, y + h - 1, x + w - 19, y + h); c.fill();
-    c.fillStyle = '#2D9CDB'; c.beginPath(); c.arc(x + w - 30, y + h / 2, 4, 0, 7); c.fill();
+  { id:'pan', name:'Сковорідка', at:560, draw:(c, x, y, w, h)=>{
+    // Ручка ліворуч, на сковорідці смажиться яєчня
+    const hw = w * .26, px = x + hw, pw = w - hw;
+    rrect(c, x, y + h * .3, hw + 6, h * .4, 3); c.fillStyle = '#9A6B3A'; c.fill();
+    c.fillStyle = '#6E4520'; c.beginPath(); c.arc(x + 5, y + h / 2, 1.8, 0, 7); c.fill();
+    rrect(c, px, y - 2, pw, h + 4, (h + 4) / 2); c.fillStyle = '#3A3A58'; c.fill(); c.lineWidth = 2; c.strokeStyle = '#1B1B3A'; c.stroke();
+    rrect(c, px + 4, y + 1.5, pw - 8, h - 3, (h - 3) / 2); c.fillStyle = '#5E5C7E'; c.fill();
+    const ex = px + pw / 2;
+    c.fillStyle = '#fff'; c.beginPath(); c.ellipse(ex, y + h / 2, Math.min(pw * .3, 24), h * .34, 0, 0, 7); c.fill();
+    c.fillStyle = '#FFC93C'; c.beginPath(); c.arc(ex + 2, y + h / 2, h * .24, 0, 7); c.fill();
   } },
-  { id:'gold', name:'Золота', at:1200, draw:(c, x, y, w, h)=>{
+  { id:'gold', name:'Золота', at:840, draw:(c, x, y, w, h)=>{
     const g = c.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, '#FFF0A8'); g.addColorStop(.5, '#FFC93C'); g.addColorStop(1, '#C99A1E');
     rrect(c, x, y, w, h, h / 2); c.fillStyle = g; c.fill(); c.lineWidth = 2; c.strokeStyle = '#8A6200'; c.stroke();
     c.fillStyle = '#fff'; c.font = `800 13px ${FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('★', x + w / 2, y + h / 2 + 1);
   } },
-  { id:'neon', name:'Неон', at:1700, draw:(c, x, y, w, h)=>{
+  { id:'neon', name:'Неон', at:1190, draw:(c, x, y, w, h)=>{
     c.save(); c.shadowColor = '#7FE7FF'; c.shadowBlur = 14;
     rrect(c, x, y, w, h, h / 2); c.fillStyle = '#1B1B3A'; c.fill(); c.lineWidth = 3; c.strokeStyle = '#7FE7FF'; c.stroke();
     c.restore();
@@ -1597,7 +1654,7 @@ function renderCollection(){
   $('colBody').innerHTML = GRADES.map(g=>{
     const list = ITEMS.filter(it=>it.mode === colMode && it.grade === g);
     const got = list.filter(it=>store.col[colMode][it.id]).length;
-    return `<div class="col-grade"><h4>${g} клас · ${got} з ${list.length}</h4><div class="col-grid">${list.map(citemHTML).join('')}</div></div>`;
+    return `<div class="col-grade"><h4>${MISSIONS[colMode][g].ico} Місія ${missionNo(g)} ${missionName(colMode, g)} · ${got} з ${list.length}</h4><div class="col-grid">${list.map(citemHTML).join('')}</div></div>`;
   }).join('');
 }
 function openCollection(){
@@ -1613,7 +1670,7 @@ function showDetail(it){
   $('colDetail').innerHTML = `<div class="detail">${pic(it.id)}<div>
     <h3>${esc(it.w)}</h3>
     ${it.mode === 'en' ? `<div class="tr">${esc(it.t)}</div>` : `<p>${esc(it.d)}</p>`}
-    <div class="meta">${it.grade} клас · спіймано ${timesWord(n)}</div>
+    <div class="meta">Місія ${missionName(it.mode, it.grade)} · спіймано ${timesWord(n)}</div>
     <div class="detail-btns">${it.mode === 'en' && enVoice ? '<button type="button" class="btn btn-primary btn-small" data-say>🔊 Послухати</button>' : ''}
       <button type="button" class="btn btn-ghost btn-small" data-back>← Уся колекція</button></div>
   </div></div>`;
@@ -1627,7 +1684,7 @@ $('colBody').addEventListener('click', e=>{
   if(!b) return;
   const it = ITEM[b.dataset.item];
   if(store.col[it.mode][it.id]) showDetail(it);
-  else showToast(`Це слово ще не спіймано. Шукай його в грі для ${it.grade} класу!`);
+  else showToast(`Це слово ще не спіймано. Шукай його в місії ${missionName(it.mode, it.grade)}!`);
 });
 $('colDetail').addEventListener('click', e=>{
   if(e.target.closest('[data-say]')) speak(ITEM[$('colDetail').dataset.item].w);
@@ -1655,7 +1712,8 @@ function renderSetup(){
   $('grades').innerHTML = GRADES.map(g=>{
     const list = ITEMS.filter(it=>it.mode === store.mode && it.grade === g);
     const got = list.filter(it=>store.col[store.mode][it.id]).length;
-    return `<button type="button" class="grade${g === store.grade ? ' on' : ''}" data-grade="${g}"><b>${g} клас</b><span>🎒 ${got} з ${list.length}</span></button>`;
+    const m = MISSIONS[store.mode][g];
+    return `<button type="button" class="grade${g === store.grade ? ' on' : ''}" data-grade="${g}"><small>Місія ${missionNo(g)}</small><b>${m.ico} ${m.name}</b><span>🎒 ${got} з ${list.length}</span></button>`;
   }).join('');
   $('levels').innerHTML = Object.entries(LEVELS).map(([id, L])=>{
     const b = store.best[`${store.mode}-${store.grade}-${id}`];
@@ -1670,6 +1728,9 @@ function renderSetup(){
   $('colStripN').textContent = `${MODES[store.mode]}: ${got.length} з ${modeTotal(store.mode)}`;
   $('colThumbs').innerHTML = got.slice(-10).reverse().map(pic).join('');
   renderGarage();
+  $('stickerCount').textContent = `${STICKERS.filter(st=>store.stickers[st.id]).length} з ${STICKERS.length}`;
+  $('stickersMission').innerHTML = STICKERS.filter(st=>st.kind === 'mission').map(stickerHTML).join('');
+  $('stickersGame').innerHTML = STICKERS.filter(st=>st.kind !== 'mission').map(stickerHTML).join('');
 }
 $('modes').addEventListener('click', e=>{
   const b = e.target.closest('[data-mode]');
@@ -1688,10 +1749,17 @@ $('levels').addEventListener('click', e=>{
   if(b) start(b.dataset.level);
 });
 
+// Наліпка: отримана — кольорова, ще ні — сіра; клацання підказує, за що її дають
+const stickerHTML = st=>`<span class="sticker${store.stickers[st.id] ? '' : ' no'}" data-st="${st.id}" title="${esc(st.how)}"><span class="st-ico"><span>${st.ico}</span></span>${esc(st.name)}</span>`;
+document.addEventListener('click', e=>{
+  const st = STICKERS.find(st=>st.id === e.target.closest('[data-st]')?.dataset.st);
+  if(st) showToast(`${st.ico} ${st.how}`);
+});
+
 // Що відкриється наступним: оформлення чи нове слово поточного режиму
 function nextUnlock(){
   const shop = Object.entries(SHOP).flatMap(([kind, list])=>list.filter(x=>!isOpen(x)).map(x=>({ at:x.at, name:`${SHOP_NAME[kind].toLowerCase()} «${x.name}»` })));
-  const words = ITEMS.filter(it=>it.mode === store.mode && !isOpenItem(it)).map(it=>({ at:it.at, name:`нове слово для ${it.grade} класу` }));
+  const words = ITEMS.filter(it=>it.mode === store.mode && !isOpenItem(it)).map(it=>({ at:it.at, name:`нове слово для місії ${missionName(it.mode, it.grade)}` }));
   return [...shop, ...words].sort((a, b)=>a.at - b.at)[0];
 }
 const pickHTML = (kind, x)=>{
@@ -1758,7 +1826,7 @@ function renderProfile(){
     const pad = PADDLES.find(x=>x.id === p.paddle && x.at <= (p.total || 0)) || PADDLES[0];
     const col = p.col ? Object.keys(p.col.info || {}).length + Object.keys(p.col.en || {}).length : 0;
     return `<div class="pl-row${me ? ' me' : ''}"><img class="pb-pad" src="${padThumb(pad)}" alt="">
-      <span class="pl-name">${esc(n)}<small>★ ${p.total || 0} · у колекції ${col} з ${ITEMS.length}</small></span>
+      <span class="pl-name">${esc(n)}<small>★ ${p.total || 0} · у колекції ${col} з ${ITEMS.length} · наліпок ${Object.keys(p.stickers || {}).length}</small></span>
       ${me ? '<span class="pl-you">це ти</span>' : `<button type="button" class="btn btn-primary btn-small" data-play="${esc(n)}">Грати</button>`}
       <button type="button" class="pl-del" data-del="${esc(n)}" title="Видалити гравця">✕</button>
     </div>`;
@@ -1920,6 +1988,7 @@ function step(dt){
   const w = G.word;
   if(w){
     if(w.shake > 0) w.shake -= dt;
+    if(w.state === 'hidden' && (w.t += dt) >= L.knock[0]){ w.t -= L.knock[1]; knock(w); }
     if(w.state === 'falling'){
       w.y += L.fall * dt;
       if(w.y + w.h >= PY && w.y <= PY + PH && w.x + w.w >= G.px - G.pw / 2 && w.x <= G.px + G.pw / 2) caught();
@@ -2039,7 +2108,7 @@ function countBelow(r, c){
   return n;
 }
 const wordRect = (r, c)=>({ x:LEFT + c * CW + 2, y:TOP + r * RH + 2, w:3 * CW - 4, h:BH });
-// Де сховати слово. Нова стіна: ряд за рівнем (depth, spread). Далі — там, де під схованкою лишилось кілька цеглинок
+// Де сховати слово. Нова стіна: ряд за рівнем (depth, spread). Далі — переважно в другому-третьому ряду знизу, де під схованкою лишилось кілька цеглинок
 function wordSpot(fresh){
   const L = G.L, rows = G.grid.length;
   if(fresh) return { r:Math.max(0, rows - 1 - L.depth - Math.floor(Math.random() * (L.spread + 1))), c:Math.floor(Math.random() * (COLS - 2)) };
@@ -2050,10 +2119,12 @@ function wordSpot(fresh){
     if(below >= 2 && !ballIn) spots.push({ r, c, below });
   }
   if(!spots.length) return null;
-  spots.sort((a, b)=>Math.abs(a.below - want) - Math.abs(b.below - want));
-  return pick(spots.slice(0, 6));
+  // Насамперед — другий-третій ряд знизу, щоб слово недовго чекало
+  const low = spots.filter(s=>s.r >= rows - 3), list = low.length ? low : spots;
+  list.sort((a, b)=>Math.abs(a.below - want) - Math.abs(b.below - want));
+  return pick(list.slice(0, 6));
 }
-// Черга слів: спершу ще не зібрані слова обраного класу, далі — попередніх класів, потім повторення зібраних
+// Черга слів: спершу ще не зібрані слова обраної місії, далі — попередніх місій, потім повторення зібраних
 function buildQueue(){
   const got = it=>store.col[G.mode][it.id];
   const pool = g=>ITEMS.filter(it=>it.mode === G.mode && it.grade === g && isOpenItem(it));
@@ -2066,8 +2137,21 @@ function placeWord(fresh){
   if(!G.queue.length) G.queue = buildQueue();
   const item = G.queue.shift();
   for(let k = 0; k < 3; k++) G.grid[s.r][s.c + k] = null;
-  G.word = Object.assign({ item, state:'hidden', r:s.r, c:s.c, shake:0 }, wordRect(s.r, s.c));
+  G.word = Object.assign({ item, state:'hidden', r:s.r, c:s.c, shake:0, t:0 }, wordRect(s.r, s.c));
   picImg(item.id);   // малюнок знадобиться, коли слово спіймають
+  checkWord();
+}
+// Слово стукає зсередини й вибиває одну цеглинку під собою (без балів)
+function knock(w){
+  const under = [];
+  for(let r = w.r + 1; r < G.grid.length; r++) for(let k = 0; k < 3; k++) if(G.grid[r][w.c + k]) under.push([r, w.c + k]);
+  if(!under.length) return;
+  const [r, c] = pick(under), x = LEFT + c * CW + 2 + BW / 2, y = TOP + r * RH + 2 + BH / 2;
+  G.grid[r][c] = null;
+  w.shake = .4;
+  SFX.stone(); SFX.brick(r);
+  popText('тук!', w.x + w.w / 2, w.y - 4, false, '#FFC93C');
+  for(let i = 0; i < 7; i++) G.fx.push({ kind:'bit', x, y, vx:(Math.random() - .5) * 260, vy:-Math.random() * 220, t:0, life:.55, col:'#6C5CE7' });
   checkWord();
 }
 // Під схованкою порожньо — слово падає
@@ -2094,7 +2178,7 @@ function caught(){
   save();   // предмет у колекції залишається, навіть якщо гру не дограли
   G.words++;
   G.found.push({ it, isNew });
-  addScore(isNew ? 15 : 10, w.x + w.w / 2, PY - 30, isNew ? 'Нове! +15' : '+10', true);
+  addScore(isNew ? 30 : 20, w.x + w.w / 2, PY - 30, isNew ? 'Нове! +30' : '+20', true);
   G.fx.push({ kind:'pic', img:picImg(it.id), x:clamp(G.px, 50, W - 50), y:PY - 60, t:0, life:1.4 });
   const chip = $('wordsChip');
   $('wordsGot').textContent = G.words;
@@ -2215,6 +2299,9 @@ function finish(){
   store.rounds++;
   const opened = Object.entries(SHOP).flatMap(([kind, list])=>list.filter(x=>x.at > before && isOpen(x)).map(x=>({ kind, x })));
   const newWords = ITEMS.filter(it=>it.at > before && isOpenItem(it));
+  const run = { words:g.words, escaped:g.escaped, lostBalls:g.lostBalls, bricks:g.bricks, turboT:g.turboT, walls:g.walls, stars, level:g.id };
+  const earned = STICKERS.filter(st=>!store.stickers[st.id] && st.test(run, store));
+  earned.forEach(st=>store.stickers[st.id] = 1);
   save();
 
   $('resEmoji').textContent = g.words ? '🎉' : '⏰';
@@ -2226,7 +2313,7 @@ function finish(){
     `<div class="citem">${isNew ? '<span class="new-tag">нове!</span>' : ''}${pic(it.id)}${esc(it.w)}</div>`).join('');
   const modeName = MODES[g.mode];
   $('resList').innerHTML = [
-    ['Гра', `${modeName} · ${g.grade} клас`],
+    ['Гра', `${modeName} · місія ${missionName(g.mode, g.grade)}`],
     ['Рівень', `${g.L.ico} ${g.L.name}`],
     ['Слів спіймано', g.words],
     g.escaped && ['Слів утекло', g.escaped],
@@ -2239,8 +2326,9 @@ function finish(){
   $('resUnlock').innerHTML = (opened.length ? `<div class="unlock"><b>🔓 Відкрито в майстерні!</b><div class="unlock-list">${opened.map(({ kind, x })=>
     `<span class="unlock-item"><img src="${thumb(kind, x)}" alt="">${SHOP_NAME[kind]}: ${x.name}</span>`).join('')}</div></div>` : '')
     + (newWords.length ? `<div class="unlock"><b>🔓 Нові слова для колекції!</b><div class="unlock-list">${Object.keys(MODES).filter(wordsBy).map(m=>
-      `<span class="unlock-item">${MODES[m]}: ${wordsBy(m)}</span>`).join('')}</div></div>` : '');
-  if(opened.length || newWords.length) sparkle(1.2);
+      `<span class="unlock-item">${MODES[m]}: ${wordsBy(m)}</span>`).join('')}</div></div>` : '')
+    + (earned.length ? `<div class="unlock"><b>🎉 ${earned.length > 1 ? 'Нові наліпки' : 'Нова наліпка'}!</b><div class="unlock-list">${earned.map(stickerHTML).join('')}</div></div>` : '');
+  if(opened.length || newWords.length || earned.length) sparkle(1.2);
 
   if(stars === 3 || (record && prev)){ popper(); bigFanfare(.1); confetti(stars === 3 ? 160 : 90); }
   else fanfare();
