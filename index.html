@@ -349,7 +349,7 @@
         <div class="find-pop" id="findPop"></div>
         <div class="over" id="countOver" hidden>
           <div class="count" id="countNum">3</div>
-          <div class="over-card">Рухай мишу — дощечка їде за нею.<br>Клацни, щоб запустити м'ячик.</div>
+          <div class="over-card">Рухай мишу — дощечка їде за нею.<br>Клацни або натисни Enter, щоб запустити м'ячик.</div>
         </div>
         <div class="over" id="pauseOver" hidden>
           <h2>Пауза</h2>
@@ -359,7 +359,7 @@
       <aside class="side" id="side">
         <h4>Знахідка</h4>
         <div class="find" id="find"></div>
-        <small>Миша — рух дощечки<br>Клацання — запуск м'ячика<br>← → — теж рух<br>Пробіл — пауза</small>
+        <small>Миша — рух дощечки<br>Клацання або Enter — запуск м'ячика<br>← → — теж рух<br>Пробіл — пауза</small>
       </aside>
     </div>
     <div class="teacher-note"></div>
@@ -2230,7 +2230,7 @@ function draw(){
   if(G.ball.held && G.phase === 'play'){
     ctx.fillStyle = dark ? 'rgba(255,255,255,.85)' : 'rgba(27,27,58,.75)';
     ctx.font = `800 17px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('Клацни, щоб запустити м\'ячик', W / 2, PY - 44);
+    ctx.fillText('Клацни або натисни Enter, щоб запустити м\'ячик', W / 2, PY - 44);
   }
   for(const f of G.fx){
     const p = f.t / f.life;
