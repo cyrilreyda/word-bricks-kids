@@ -1049,21 +1049,22 @@ const COLS = 10, CW = 58, RH = 26, BW = 54, BH = 22, LEFT = 10, TOP = 56;   // �
 const R = 9;                 // радіус м'ячика
 const PY = H - 46, PH = 16;  // верх дощечки й її товщина
 const TURBO = 1.45;          // у турбо м'ячик у стільки разів швидший, а бали за цеглинки подвоюються
+const WORDS_AT_ONCE = 2;     // скільки слів одночасно ховається серед цеглинок
 const AUTO_LAUNCH = 3;       // м'ячик сам злітає з дощечки через стільки секунд
-const STARS_AT = [1, 2, 4];  // зірки за гру: скільки слів спіймано
+const STARS_AT = [2, 4, 7];  // зірки за гру: скільки слів спіймано
 
 // time — тривалість, с; rows — ряди цеглинок; strong — частка міцних (2 удари), tough — дуже міцних (3 удари);
 // speed — швидкість м'ячика, пікс./с, на початку й наприкінці гри; paddle — ширина дощечки; fall — швидкість падіння слова;
 // depth — скільки рядів цеглинок під блоком ? (1 — другий ряд знизу), spread — на скільки рядів вище він може опинитися;
 // knock — слово, що довго сидить у схованці, саме вибиває цеглинку під собою: уперше через стільки секунд, далі — кожні стільки
 const LEVELS = BOOST ? {
-  easy: { name:'Легко',    ico:'🟢', info:'2 хв · швидкий м\'ячик',   time:120, rows:6, strong:.2,  tough:0,   speed:[380, 440], paddle:115, fall:150, depth:1, spread:1, knock:[25, 12] },
-  mid:  { name:'Середньо', ico:'🟡', info:'2,5 хв · міцні цеглинки', time:150, rows:7, strong:.35, tough:.05, speed:[440, 520], paddle:98,  fall:180, depth:1, spread:1, knock:[30, 15] },
-  hard: { name:'Важко',    ico:'🔴', info:'3 хв · вузька дощечка',  time:180, rows:8, strong:.45, tough:.15, speed:[500, 590], paddle:82,  fall:210, depth:2, spread:0, knock:[35, 15] },
+  easy: { name:'Легко',    ico:'🟢', info:'2 хв · швидкий м\'ячик',   time:120, rows:6, strong:.2,  tough:0,   speed:[380, 440], paddle:115, fall:150, depth:1, spread:2, knock:[25, 12] },
+  mid:  { name:'Середньо', ico:'🟡', info:'2,5 хв · міцні цеглинки', time:150, rows:7, strong:.35, tough:.05, speed:[440, 520], paddle:98,  fall:180, depth:1, spread:2, knock:[30, 15] },
+  hard: { name:'Важко',    ico:'🔴', info:'3 хв · вузька дощечка',  time:180, rows:8, strong:.45, tough:.15, speed:[500, 590], paddle:82,  fall:210, depth:2, spread:1, knock:[35, 15] },
 } : {
-  easy: { name:'Легко',    ico:'🟢', info:'2 хв · повільний м\'ячик', time:120, rows:5, strong:0,   tough:0,   speed:[330, 390], paddle:140, fall:105, depth:1, spread:0, knock:[20, 10] },
-  mid:  { name:'Середньо', ico:'🟡', info:'2,5 хв · міцні цеглинки', time:150, rows:6, strong:.2,  tough:0,   speed:[380, 440], paddle:120, fall:130, depth:1, spread:1, knock:[30, 12] },
-  hard: { name:'Важко',    ico:'🔴', info:'3 хв · швидкий м\'ячик',   time:180, rows:7, strong:.35, tough:0,   speed:[430, 500], paddle:100, fall:160, depth:1, spread:1, knock:[35, 15] },
+  easy: { name:'Легко',    ico:'🟢', info:'2 хв · повільний м\'ячик', time:120, rows:5, strong:0,   tough:0,   speed:[330, 390], paddle:140, fall:105, depth:1, spread:2, knock:[20, 10] },
+  mid:  { name:'Середньо', ico:'🟡', info:'2,5 хв · міцні цеглинки', time:150, rows:6, strong:.2,  tough:0,   speed:[380, 440], paddle:120, fall:130, depth:1, spread:2, knock:[30, 12] },
+  hard: { name:'Важко',    ico:'🔴', info:'3 хв · швидкий м\'ячик',   time:180, rows:7, strong:.35, tough:0,   speed:[430, 500], paddle:100, fall:160, depth:1, spread:2, knock:[35, 15] },
 };
 const GRADES = [2, 3, 4, 5];   // місії 1–4; у коді вони позначені номерами класів, для яких дібрано слова
 const MODES = { info:'💻 Інформатика', en:'🔤 English' };
@@ -1541,13 +1542,13 @@ const isOpen = (x, total = store.total)=>total >= x.at;
 const chosen = kind=>{ const list = SHOP[kind], x = list.find(x=>x.id === store[kind]); return x && isOpen(x) ? x : list[0]; };
 
 // Сцена: тло, цеглинки, блок ?, падаюче слово, дощечка й м'ячик. Спільна для гри й прев'ю в майстерні.
-// S = { field, brick, paddle, mode, grid, word, ball, px, pw, t, bg — готове тло (необов'язково) }
+// S = { field, brick, paddle, mode, grid, words — сховані й падаючі слова, ball, px, pw, t, bg — готове тло (необов'язково) }
 function drawScene(c, S){
   if(S.bg){ c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(S.bg, 0, 0); c.restore(); }
   else S.field.draw(c);
-  const dark = S.field.dark, word = S.word;
+  const dark = S.field.dark;
   // Під блоком ? підсвічено колонки, які треба розчистити
-  if(word && word.state === 'hidden'){
+  for(const word of S.words) if(word.state === 'hidden'){
     const top = word.y + RH, bottom = TOP + S.grid.length * RH;
     if(bottom > top){
       c.fillStyle = dark ? 'rgba(255,255,255,.07)' : 'rgba(108,92,231,.08)';
@@ -1562,8 +1563,8 @@ function drawScene(c, S){
     S.brick.draw(c, x, y, BW, BH, info);
     drawDamage(c, x, y, BW, BH, info);
   }));
-  if(word && word.state === 'hidden') drawMystery(c, word, S.t);
-  if(word && word.state === 'falling') drawWord(c, word);
+  for(const word of S.words) if(word.state === 'hidden') drawMystery(c, word, S.t);
+  for(const word of S.words) if(word.state === 'falling') drawWord(c, word);
   S.paddle.draw(c, S.px - S.pw / 2, PY, S.pw, PH, S.t);
   const b = S.ball;
   c.fillStyle = '#fff'; c.strokeStyle = '#1B1B3A'; c.lineWidth = 2;
@@ -1625,7 +1626,7 @@ function renderPreview(){
   const grid = Array.from({ length:5 }, (_, r)=>Array.from({ length:COLS }, (_, col)=>
     r === 2 && col >= 4 && col <= 6 ? null : r === 4 && col >= 4 && col <= 6 ? null : { hp:r === 0 ? 2 : 1, max:r === 0 ? 2 : 1 }));
   const word = { state:'hidden', x:LEFT + 4 * CW + 2, y:TOP + 2 * RH + 2, w:3 * CW - 4, h:BH, shake:0 };
-  drawScene(c, { field:chosen('field'), brick:chosen('brick'), paddle:chosen('paddle'), mode:store.mode, grid, word,
+  drawScene(c, { field:chosen('field'), brick:chosen('brick'), paddle:chosen('paddle'), mode:store.mode, grid, words:[word],
     ball:{ x:420, y:520 }, px:300, pw:130, t:0 });
   $('gPrev').src = cv.toDataURL();
 }
@@ -1907,7 +1908,7 @@ function start(levelId){
   lastLevel = levelId;
   const L = LEVELS[levelId];
   G = { id:levelId, L, mode:store.mode, grade:store.grade, t:0, score:0, words:0, escaped:0, lostBalls:0, bricks:0, walls:0,
-        turbo:false, turboT:0, found:[], queue:[], grid:[], word:null, wordWait:0, px:W / 2, pw:L.paddle,
+        turbo:false, turboT:0, found:[], queue:[], grid:[], slots:[], wordWait:0, px:W / 2, pw:L.paddle,
         ball:{ x:W / 2, y:PY - R - 1, vx:0, vy:0, held:true, heldT:0 }, fx:[], pops:[],
         phase:'count', paused:false, raf:0, last:0, timers:[], keys:{} };
   buildWall(true);
@@ -1984,17 +1985,17 @@ function step(dt){
   if(b.held){ b.heldT += dt; if(b.heldT >= AUTO_LAUNCH) launch(); }
   else moveBall(b, dt);
 
-  // Слово: сховане чекає, поки під ним розчистять колонки; падаюче — ловимо дощечкою
-  const w = G.word;
-  if(w){
+  // Слова: сховані чекають, поки під ними розчистять колонки; падаючі — ловимо дощечкою
+  for(const w of G.slots.slice()){
     if(w.shake > 0) w.shake -= dt;
     if(w.state === 'hidden' && (w.t += dt) >= L.knock[0]){ w.t -= L.knock[1]; knock(w); }
     if(w.state === 'falling'){
       w.y += L.fall * dt;
-      if(w.y + w.h >= PY && w.y <= PY + PH && w.x + w.w >= G.px - G.pw / 2 && w.x <= G.px + G.pw / 2) caught();
-      else if(w.y > H) escaped();
+      if(w.y + w.h >= PY && w.y <= PY + PH && w.x + w.w >= G.px - G.pw / 2 && w.x <= G.px + G.pw / 2) caught(w);
+      else if(w.y > H) escaped(w);
     }
-  } else if((G.wordWait -= dt) <= 0) placeWord(false);
+  }
+  if(G.slots.length < WORDS_AT_ONCE && (G.wordWait -= dt) <= 0) placeWord(false);
 
   // Ефекти: уламки цеглинок, бали, що злітають, малюнок спійманого предмета
   for(const f of G.fx){ f.t += dt; if(f.kind === 'bit'){ f.x += f.vx * dt; f.y += f.vy * dt; f.vy += 700 * dt; } }
@@ -2054,16 +2055,15 @@ function collide(b){
     const h = touchRect(b, LEFT + c * CW + 2, TOP + r * RH + 2, BW, BH);
     if(h && (!best || h.depth > best.depth)) best = Object.assign(h, { r, c });
   }
-  const w = G.word;
-  if(w && w.state === 'hidden'){
+  for(const w of G.slots) if(w.state === 'hidden'){
     const h = touchRect(b, w.x, w.y, w.w, w.h);
-    if(h && (!best || h.depth > best.depth)) best = Object.assign(h, { word:true });
+    if(h && (!best || h.depth > best.depth)) best = Object.assign(h, { word:w });
   }
   if(!best) return false;
   if(best.axis === 'x'){ b.vx = best.sign * Math.abs(b.vx); b.x += best.sign * best.depth; }
   else { b.vy = best.sign * Math.abs(b.vy); b.y += best.sign * best.depth; }
   // Удар у блок ? знизу чи збоку звільняє слово; зверху (м'ячик застряг над стіною) — лише відскок
-  if(best.word){ if(best.axis === 'x' || best.sign > 0) breakFree(w); else { SFX.stone(); w.shake = .25; } }
+  if(best.word){ const w = best.word; if(best.axis === 'x' || best.sign > 0) breakFree(w); else { SFX.stone(); w.shake = .25; } }
   else hitBrick(best.r, best.c);
   return true;
 }
@@ -2099,8 +2099,11 @@ function buildWall(first){
     addScore(15, W / 2, TOP + L.rows * RH + 40, 'Нова стіна! +15', true);
     SFX.newWall();
     if(!G.ball.held && G.ball.y - R < TOP + L.rows * RH + 6) holdBall();
+    // Сховані слова старої стіни повертаються в чергу; ті, що вже падають, падають далі
+    G.slots.filter(w=>w.state === 'hidden').forEach(w=>G.queue.unshift(w.item));
+    G.slots = G.slots.filter(w=>w.state !== 'hidden');
   }
-  placeWord(true);
+  while(G.slots.length < WORDS_AT_ONCE && placeWord(true));
 }
 // Скільки цеглинок лишилось під трьома колонками схованки
 function countBelow(r, c){
@@ -2109,19 +2112,26 @@ function countBelow(r, c){
   return n;
 }
 const wordRect = (r, c)=>({ x:LEFT + c * CW + 2, y:TOP + r * RH + 2, w:3 * CW - 4, h:BH });
-// Де сховати слово. Нова стіна: ряд за рівнем (depth, spread). Далі — переважно в другому-третьому ряду знизу, де під схованкою лишилось кілька цеглинок
+// Де сховати слово. Нова стіна: ряд за рівнем (depth, spread). Далі — переважно у 2–4-му ряду знизу, де під схованкою лишилось кілька цеглинок.
+// Два сховані слова не стоять одне над одним: їхні колонки не перетинаються
 function wordSpot(fresh){
   const L = G.L, rows = G.grid.length;
-  if(fresh) return { r:Math.max(0, rows - 1 - L.depth - Math.floor(Math.random() * (L.spread + 1))), c:Math.floor(Math.random() * (COLS - 2)) };
+  const free = c=>G.slots.every(o=>o.state !== 'hidden' || Math.abs(o.c - c) >= 3);
+  if(fresh){
+    const cols = [...Array(COLS - 2).keys()].filter(free);
+    if(!cols.length) return null;
+    return { r:Math.max(0, rows - 1 - L.depth - Math.floor(Math.random() * (L.spread + 1))), c:pick(cols) };
+  }
   const b = G.ball, want = L.depth * 3, spots = [];
   for(let r = 0; r < rows - 1; r++) for(let c = 0; c <= COLS - 3; c++){
+    if(!free(c)) continue;
     const below = countBelow(r, c), q = wordRect(r, c);
     const ballIn = b.x + R > q.x - 4 && b.x - R < q.x + q.w + 4 && b.y + R > q.y - 4 && b.y - R < q.y + q.h + 4;
     if(below >= 2 && !ballIn) spots.push({ r, c, below });
   }
   if(!spots.length) return null;
-  // Насамперед — другий-третій ряд знизу, щоб слово недовго чекало
-  const low = spots.filter(s=>s.r >= rows - 3), list = low.length ? low : spots;
+  // Насамперед — 2–4-й ряд знизу, щоб слово недовго чекало
+  const low = spots.filter(s=>s.r >= rows - 4), list = low.length ? low : spots;
   list.sort((a, b)=>Math.abs(a.below - want) - Math.abs(b.below - want));
   return pick(list.slice(0, 6));
 }
@@ -2132,15 +2142,24 @@ function buildQueue(){
   const mine = pool(G.grade), lower = GRADES.filter(g=>g < G.grade).flatMap(pool);
   return [...shuffle(mine.filter(it=>!got(it))), ...shuffle(lower.filter(it=>!got(it))), ...shuffle([...mine, ...lower].filter(got))];
 }
+// Ховає ще одне слово. false — місця немає
 function placeWord(fresh){
   const s = wordSpot(fresh);
-  if(!s){ buildWall(false); return; }
-  if(!G.queue.length) G.queue = buildQueue();
-  const item = G.queue.shift();
+  if(!s){
+    // Місця немає: якщо жодного схованого слова не лишилось — нова стіна, інакше спробуємо трохи згодом
+    if(!G.slots.some(w=>w.state === 'hidden')) buildWall(false);
+    else G.wordWait = 1;
+    return false;
+  }
+  // Два однакові слова на полі одночасно не ховаємо
+  const onField = it=>G.slots.some(w=>w.item === it);
+  if(!G.queue.some(it=>!onField(it))) G.queue.push(...buildQueue());
+  const item = G.queue.splice(G.queue.findIndex(it=>!onField(it)), 1)[0];
   for(let k = 0; k < 3; k++) G.grid[s.r][s.c + k] = null;
-  G.word = Object.assign({ item, state:'hidden', r:s.r, c:s.c, shake:0, t:0 }, wordRect(s.r, s.c));
+  G.slots.push(Object.assign({ item, state:'hidden', r:s.r, c:s.c, shake:0, t:0 }, wordRect(s.r, s.c)));
   picImg(item.id);   // малюнок знадобиться, коли слово спіймають
   checkWord();
+  return true;
 }
 // М'ячик влучив у блок ?: усі цеглинки під ним розсипаються (з балами, як за збиті), і слово падає
 function breakFree(w){
@@ -2172,8 +2191,9 @@ function knock(w){
 }
 // Під схованкою порожньо — слово падає
 function checkWord(){
-  const w = G.word;
-  if(!w || w.state !== 'hidden' || countBelow(w.r, w.c) > 0) return;
+  for(const w of G.slots) if(w.state === 'hidden' && countBelow(w.r, w.c) === 0) release(w);
+}
+function release(w){
   w.state = 'falling';
   let fs = 21;
   ctx.font = `800 ${fs}px ${FONT}`;
@@ -2188,8 +2208,8 @@ function checkWord(){
   popText('Лови слово!', cx, w.y - 6, false, '#FFC93C');
   // Якщо стіну вже розбито, наступна з'явиться, щойно слово впаде
 }
-function caught(){
-  const w = G.word, it = w.item, col = store.col[G.mode], isNew = !col[it.id];
+function caught(w){
+  const it = w.item, col = store.col[G.mode], isNew = !col[it.id];
   col[it.id] = (col[it.id] || 0) + 1;
   save();   // предмет у колекції залишається, навіть якщо гру не дограли
   G.words++;
@@ -2202,14 +2222,14 @@ function caught(){
   showFind(it, isNew);
   SFX.caught();
   if(G.mode === 'en') speak(it.w);
-  G.word = null;
+  G.slots = G.slots.filter(x=>x !== w);
   G.wordWait = .9;
 }
-function escaped(){
+function escaped(w){
   G.escaped++;
   SFX.escape();
   popText('Слово втекло…', W / 2, PY - 60, true);
-  G.word = null;
+  G.slots = G.slots.filter(x=>x !== w);
   G.wordWait = .9;
 }
 function showFind(it, isNew){
@@ -2240,7 +2260,7 @@ function draw(){
   const k = cv.width / W;
   ctx.setTransform(k, 0, 0, k, 0, 0);
   const t = performance.now() / 1000;
-  drawScene(ctx, { field:chosen('field'), brick:chosen('brick'), paddle:chosen('paddle'), mode:G.mode, grid:G.grid, word:G.word,
+  drawScene(ctx, { field:chosen('field'), brick:chosen('brick'), paddle:chosen('paddle'), mode:G.mode, grid:G.grid, words:G.slots,
     ball:G.ball, px:G.px, pw:G.pw, t, bg:background() });
   const dark = chosen('field').dark;
   if(G.ball.held && G.phase === 'play'){
