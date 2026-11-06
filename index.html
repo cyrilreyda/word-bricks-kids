@@ -1137,13 +1137,15 @@
       <circle cx="19" cy="21" r="3.6" fill="#E8453C"/><circle cx="29" cy="19" r="3.2" fill="#E8453C"/><circle cx="24" cy="31" r="3.2" fill="#E8453C"/>
       <path d="M29 26c2-2.5 4.5-1.5 4.5 0-1 2-3.5 2-4.5 0z" fill="#3DBE6B"/><path d="M15 15c1.5-2 3.5-1.5 3.5 0-1 1.5-2.5 1.5-3.5 0z" fill="#3DBE6B"/>
     </symbol>
-    <symbol id="w-rocket" viewBox="0 0 48 48">
-      <path d="M19 38c0 5 2 8 5 9 3-1 5-4 5-9z" fill="#FF9F43"/><path d="M21.5 38c0 3 1 5 2.5 6 1.5-1 2.5-3 2.5-6z" fill="#FFC93C"/>
-      <path d="M16 27l-7 8v5l8-4zM32 27l7 8v5l-8-4z" fill="#E8453C" stroke="#B5281F" stroke-width="1.5" stroke-linejoin="round"/>
-      <path d="M24 3c7 6 9 14 9 22v13H15V25c0-8 2-16 9-22z" fill="#F6F5FB" stroke="#9A97B0" stroke-width="2" stroke-linejoin="round"/>
-      <path d="M24 3.5c3 2.5 5 5.5 6.3 8.5H17.7C19 9 21 6 24 3.5z" fill="#E8453C"/>
-      <circle cx="24" cy="20" r="4.5" fill="#2D9CDB" stroke="#514F72" stroke-width="2"/>
-      <rect x="16" y="33" width="16" height="4" fill="#C9C7D9"/>
+    <symbol id="w-ship" viewBox="0 0 48 48">
+      <path d="M24 31V5" stroke="#6E4520" stroke-width="2.5"/>
+      <path d="M24 5h8l-2.5 2.5L32 10h-8z" fill="#E8453C"/>
+      <path d="M26 9l13 19H26z" fill="#BDE6FF" stroke="#2D9CDB" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M22 12L11 28h11z" fill="#FFE8B0" stroke="#E0A800" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M4 31h40l-6 10H10z" fill="#9A6B3A" stroke="#6E4520" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M7 34.5h34" stroke="#FFC93C" stroke-width="2"/>
+      <circle cx="15" cy="38" r="1.6" fill="#FFF3B0"/><circle cx="24" cy="38" r="1.6" fill="#FFF3B0"/><circle cx="33" cy="38" r="1.6" fill="#FFF3B0"/>
+      <path d="M2 44.5q4-3 8 0t8 0 8 0 8 0 8 0 4 0" fill="none" stroke="#2D9CDB" stroke-width="2.6" stroke-linecap="round"/>
     </symbol>
     <symbol id="w-castle" viewBox="0 0 48 48">
       <path d="M24 18V5" stroke="#514F72" stroke-width="1.8"/><path d="M24 5h9l-3 3 3 3h-9z" fill="#E8453C"/>
@@ -1232,7 +1234,7 @@ const MODES = { info:'💻 Інформатика', en:'🔤 English' };
 // Назви місій: учні старших класів обирають місію, а не «молодший клас»
 const MISSIONS = {
   info: { 2:{ ico:'🖥️', name:"Розбуди комп'ютер" }, 3:{ ico:'💾', name:'Загублена флешка' }, 4:{ ico:'🔐', name:'Таємний пароль' }, 5:{ ico:'🦠', name:'Атака вірусів' }, 6:{ ico:'🎨', name:'Пікселі на волі' } },
-  en:   { 2:{ ico:'🐟', name:'Кіт ловить рибку' }, 3:{ ico:'🦆', name:'Качка на велосипеді' }, 4:{ ico:'🐘', name:'Слон під парасолькою' }, 5:{ ico:'🐬', name:'Дельфін на гелікоптері' }, 6:{ ico:'🐧', name:'Пінгвін у ракеті' } },
+  en:   { 2:{ ico:'🐟', name:'Кіт ловить рибку' }, 3:{ ico:'🦆', name:'Качка на велосипеді' }, 4:{ ico:'🐘', name:'Слон під парасолькою' }, 5:{ ico:'🐬', name:'Дельфін на гелікоптері' }, 6:{ ico:'🐧', name:'Пінгвін на кораблі' } },
 };
 const missionNo = g=>GRADES.indexOf(g) + 1;
 const missionName = (mode, g)=>`«${MISSIONS[mode][g].name}»`;
@@ -1314,7 +1316,7 @@ const WORDS = {
         ['lemon','lemon','лимон'], ['carrot','carrot','морква'], ['kite','kite','повітряний змій'], ['butterfly','butterfly','метелик'], ['cheese','cheese','сир']],
     5: [['strawberry','strawberry','полуниця'], ['sandwich','sandwich','бутерброд'], ['guitar','guitar','гітара'], ['camera','camera','фотоапарат'], ['helicopter','helicopter','гелікоптер'],
         ['mountain','mountain','гора'], ['rainbow','rainbow','веселка'], ['dolphin','dolphin','дельфін'], ['scissors','scissors','ножиці'], ['island','island','острів']],
-    6: [['penguin','penguin','пінгвін'], ['giraffe','giraffe','жирафа'], ['pizza','pizza','піца'], ['rocket','rocket','ракета'], ['castle','castle','замок'],
+    6: [['penguin','penguin','пінгвін'], ['giraffe','giraffe','жирафа'], ['pizza','pizza','піца'], ['ship','ship','корабель'], ['castle','castle','замок'],
         ['snowman','snowman','сніговик'], ['crown','crown','корона'], ['train','train','потяг'], ['octopus','octopus','восьминіг'], ['watermelon','watermelon','кавун']],
   },
 };
