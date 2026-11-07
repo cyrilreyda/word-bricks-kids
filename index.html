@@ -2089,6 +2089,7 @@ function start(levelId){
         turbo:false, turboT:0, found:[], queue:[], grid:[], slots:[], wordWait:0, px:W / 2, pw:L.paddle,
         ball:{ x:W / 2, y:PY - R - 1, vx:0, vy:0, held:true, heldT:0 }, fx:[], pops:[],
         phase:'count', paused:false, raf:0, last:0, timers:[], keys:{} };
+  G.queue = buildQueue();
   buildWall(true);
   $('pauseOver').hidden = true;
   $('score').textContent = '0';
@@ -2174,6 +2175,7 @@ function step(dt){
     }
   }
   if(G.slots.length < WORDS_AT_ONCE && (G.wordWait -= dt) <= 0) placeWord(false);
+  if(!G.queue.length && !G.slots.length && !G.grid.some(row=>row.some(Boolean))) buildWall(false);
 
   // Ефекти: уламки цеглинок, бали, що злітають, малюнок спійманого предмета
   for(const f of G.fx){ f.t += dt; if(f.kind === 'bit'){ f.x += f.vx * dt; f.y += f.vy * dt; f.vy += 700 * dt; } }
@@ -2313,15 +2315,23 @@ function wordSpot(fresh){
   list.sort((a, b)=>Math.abs(a.below - want) - Math.abs(b.below - want));
   return pick(list.slice(0, 6));
 }
-// Черга слів: спершу ще не зібрані слова обраної місії, далі — попередніх місій, потім повторення зібраних
+// Черга слів на всю гру — кожне слово трапляється щонайбільше раз. Спершу ще не зібрані слова обраної місії,
+// далі — попередніх місій, потім повторення зібраних. Якщо гра триває довше, ніж вистачає цих слів, —
+// відкриті слова наступних місій, від найближчої. Коли черга порожня, нових слів у цій грі більше немає
 function buildQueue(){
   const got = it=>store.col[G.mode][it.id];
   const pool = g=>ITEMS.filter(it=>it.mode === G.mode && it.grade === g && isOpenItem(it));
   const mine = pool(G.grade), lower = GRADES.filter(g=>g < G.grade).flatMap(pool);
-  return [...shuffle(mine.filter(it=>!got(it))), ...shuffle(lower.filter(it=>!got(it))), ...shuffle([...mine, ...lower].filter(got))];
+  const higher = GRADES.filter(g=>g > G.grade).flatMap(g=>[...shuffle(pool(g).filter(it=>!got(it))), ...shuffle(pool(g).filter(got))]);
+  return [...shuffle(mine.filter(it=>!got(it))), ...shuffle(lower.filter(it=>!got(it))), ...shuffle([...mine, ...lower].filter(got)), ...higher];
 }
-// Ховає ще одне слово. false — місця немає
+// Ховає ще одне слово. false — слів чи місця немає
 function placeWord(fresh){
+  if(!G.queue.length){   // усі слова цієї гри вже були
+    G.wordWait = Infinity;
+    if(!G.allShown){ G.allShown = true; popText('Нових слів у цій грі більше немає', W / 2, PY - 90, false, '#FFC93C', true); }
+    return false;
+  }
   const s = wordSpot(fresh);
   if(!s){
     // Місця немає: якщо жодного схованого слова не лишилось — нова стіна, інакше спробуємо трохи згодом
@@ -2329,10 +2339,7 @@ function placeWord(fresh){
     else G.wordWait = 1;
     return false;
   }
-  // Два однакові слова на полі одночасно не ховаємо
-  const onField = it=>G.slots.some(w=>w.item === it);
-  if(!G.queue.some(it=>!onField(it))) G.queue.push(...buildQueue());
-  const item = G.queue.splice(G.queue.findIndex(it=>!onField(it)), 1)[0];
+  const item = G.queue.shift();
   for(let k = 0; k < 3; k++) G.grid[s.r][s.c + k] = null;
   G.slots.push(Object.assign({ item, state:'hidden', r:s.r, c:s.c, shake:0, t:0 }, wordRect(s.r, s.c)));
   picImg(item.id);   // малюнок знадобиться, коли слово спіймають
