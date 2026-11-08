@@ -339,7 +339,7 @@
       <span class="chip score" title="Бали"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-star"/></svg><span id="score">0</span></span>
       <span class="chip time" id="timeChip" title="Скільки лишилось часу">⏱ <span id="time">2:00</span></span>
       <span class="chip words" id="wordsChip" title="Скільки слів спіймано">🎁 <span id="wordsGot">0</span></span>
-      <button class="turbo-btn" id="turboBtn" type="button" title="Турбо: м'ячик швидший, за цеглинки вдвічі більше балів" data-ui>🚀 Турбо <small id="turboX"></small></button>
+      <button class="turbo-btn" id="turboBtn" type="button" title="Турбо: м'ячик швидший, за цеглинки вдвічі більше балів" data-ui>⚡ Турбо <small id="turboX"></small></button>
       <button class="round-btn" id="pauseBtn" title="Пауза (Пробіл)" data-ui>⏸</button>
       <button class="round-btn exit" id="exitBtn" title="Вийти до вибору рівня" data-ui>✕</button>
     </div>
@@ -1663,7 +1663,7 @@ function drawDamage(c, x, y, w, h, b){
   }
 }
 
-// Дощечки: draw(c, x, y, w, h, t), x — лівий край, t — час (для вогника ракети)
+// Дощечки: draw(c, x, y, w, h, t), x — лівий край, t — час (для анімації)
 function plainPad(c, x, y, w, h, fill){
   rrect(c, x, y, w, h, h / 2); c.fillStyle = fill; c.fill();
   c.lineWidth = 2.5; c.strokeStyle = '#fff'; c.stroke();
