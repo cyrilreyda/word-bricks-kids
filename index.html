@@ -195,7 +195,11 @@
   .win h2{font-size:26px; margin-bottom:2px;}
   .win .sub{color:var(--ink-soft); font-size:14.5px; margin:0;}
   .win .big{font-size:56px; line-height:1; margin-bottom:6px;}
-  .win.prof h2{font-size:22px;}
+  .win.prof{position:relative;}
+  .win.prof h2{font-size:22px; padding:0 36px;}
+  /* Хрестик угорі праворуч закриває вікно */
+  .prof-close{position:absolute; top:14px; right:14px; z-index:1; width:34px; height:34px; border-radius:50%; border:1.5px solid var(--line); background:var(--surface); color:var(--ink-soft); font-size:16px; font-weight:700; line-height:1; cursor:pointer;}
+  .prof-close:hover{border-color:var(--coral); color:var(--coral);}
   .name-form{display:flex; gap:8px; margin:14px 0 6px;}
   .name-form input{flex:1; min-width:0; font:inherit; font-size:16px; padding:9px 14px; border:1.5px solid var(--line); border-radius:999px; outline:none; color:var(--ink);}
   .name-form input:focus{border-color:var(--teal);}
@@ -214,7 +218,6 @@
   .pl-you{font-family:'Baloo 2','Nunito Sans',sans-serif; font-weight:700; font-size:13px; color:var(--teal-dark); padding:0 6px;}
   .pl-del{width:30px; height:30px; border-radius:50%; border:none; background:none; color:var(--ink-soft); font-size:15px; cursor:pointer;}
   .pl-del:hover{background:#FFEFE9; color:#C2410C;}
-  .prof-foot{display:flex; justify-content:flex-end; margin-top:14px;}
 
   /* ---------- Колекція ---------- */
   .win.col-win{max-width:760px; padding:18px 20px 22px; text-align:left;}
@@ -402,6 +405,7 @@
 <!-- Гравці на цьому комп'ютері -->
 <div class="overlay" id="profileOverlay">
   <div class="win prof" role="dialog" aria-labelledby="profTitle">
+    <button class="prof-close" id="profClose" type="button" title="Закрити вікно" aria-label="Закрити вікно">✕</button>
     <h2 id="profTitle">Гравці на цьому комп'ютері</h2>
     <div class="players" id="playerList"></div>
     <form class="name-form" id="addForm">
@@ -409,7 +413,6 @@
       <button class="btn btn-primary" type="submit">＋ Додати</button>
     </form>
     <p class="note-small" id="addErr"></p>
-    <div class="prof-foot"><button class="btn btn-ghost btn-small" id="profClose" type="button">Закрити</button></div>
   </div>
 </div>
 
