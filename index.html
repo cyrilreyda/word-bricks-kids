@@ -1206,8 +1206,13 @@
 
 <script>
 /* ================= Налаштування ================= */
-// ?boost — складніші рівні для сильніших учнів: швидший м'ячик, вужча дощечка, більше міцних цеглинок
-const BOOST = new URLSearchParams(location.search).has('boost');
+// ?boost — складніші рівні для сильніших учнів: швидший м'ячик, вужча дощечка, більше міцних цеглинок.
+// У встановленій грі (PWA) адреси не видно, тож вчитель перемикає режим ще й Ctrl+Alt+B — це запам'ятовується на пристрої.
+// ?boost в адресі діє лише на цей запуск: один комп'ютер може відкривати гру різним класам різними посиланнями
+const BOOST_KEY = 'word-bricks-kids-boost';
+let boostSaved = false;
+try{ boostSaved = localStorage.getItem(BOOST_KEY) === 'on'; }catch(e){}
+const BOOST = boostSaved || new URLSearchParams(location.search).has('boost');
 
 // Поле в логічних пікселях; на екрані канва масштабується під вікно
 const W = 600, H = 660;
@@ -2593,6 +2598,7 @@ document.addEventListener('contextmenu', e=>{ if(!$('game').hidden) e.preventDef
 
 document.addEventListener('keydown', e=>{
   if(e.ctrlKey && e.altKey && e.code === 'KeyZ'){ e.preventDefault(); setSound(!soundOn); return; }
+  if(e.ctrlKey && e.altKey && e.code === 'KeyB'){ e.preventDefault(); toggleBoost(); return; }
   if(!G || $('game').hidden || document.querySelector('.overlay.show')) return;
   if(e.code === 'Space'){ e.preventDefault(); if(G.paused) resume(); else pause(); return; }
   if(e.code === 'ArrowLeft' || e.code === 'ArrowRight'){ e.preventDefault(); G.keys[e.code] = true; }
@@ -2642,6 +2648,25 @@ updateFsBtn();
     setSound(z === 'klas');
   }
 }
+// Ctrl+Alt+B: складніші рівні увімкнути або вимкнути. Бали й колекція в режимах окремі, тож сторінка перезавантажується.
+// ?boost з адреси прибираємо, інакше він знову ввімкне режим
+function toggleBoost(){
+  try{
+    localStorage.setItem(BOOST_KEY, BOOST ? 'off' : 'on');
+    sessionStorage.setItem(BOOST_KEY + '-toast', '1');
+  }catch(e){ showToast('Не вдалося зберегти налаштування'); return; }
+  const q = new URLSearchParams(location.search);
+  q.delete('boost');
+  const rest = q.toString().replace(/=(?=&|$)/g, '');
+  history.replaceState(null, '', location.pathname + (rest ? '?' + rest : '') + location.hash);
+  location.reload();
+}
+try{
+  if(sessionStorage.getItem(BOOST_KEY + '-toast')){
+    sessionStorage.removeItem(BOOST_KEY + '-toast');
+    showToast(BOOST ? 'Складніші рівні' : 'Звичайні рівні');
+  }
+}catch(e){}
 updateTeacherNote();
 if(db.current && db.players[db.current]) loadPlayer(db.current);
 renderPlayerBtn();
