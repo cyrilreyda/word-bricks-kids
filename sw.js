@@ -1,9 +1,11 @@
 // Офлайн-режим гри. Онлайн сторінки завжди беруться з мережі (і оновлюють збережену копію),
 // без інтернету — зі збереженої копії. Параметри адреси (?boost, ?zvuk=…) на копію не впливають.
 // Після зміни списку FILES збільшити номер у CACHE, щоб браузери забрали нову копію.
-const CACHE = 'word-bricks-kids-v1';
+const CACHE = 'word-bricks-kids-v2';
 const FILES = ['./', './index.html', './guide/', './guide/index.html', './fonts/fonts.css',
                './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
+// Спільні файли сайту, які гра підключає з кореня: замок уроку, акаунт, «Разом», «Клас»
+FILES.push('/lock.js', '/account.js', '/duel.js', '/classrace.js');
 const TIMEOUT = 5000;   // повільна мережа в класі — після 5 с беремо збережену копію
 
 self.addEventListener('install', e=>{
@@ -26,4 +28,11 @@ self.addEventListener('fetch', e=>{
   });
   const slow = new Promise((_, reject)=>setTimeout(()=>reject(new Error('timeout')), TIMEOUT));
   e.respondWith(Promise.race([fromNet, slow]).catch(fromCache));
+});
+
+// Каталог, відкритий з інтернетом, просить кожну гру оновити збережену копію: тоді для роботи без мережі
+// досить відкрити каталог, а не кожну гру. no-cache — умовний запит: файл, що не змінився, не завантажується вдруге
+self.addEventListener('message', e=>{
+  if(e.data !== 'refresh') return;
+  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES.map(f=>new Request(f, { cache:'no-cache' })))).catch(()=>{}));
 });
