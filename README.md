@@ -115,4 +115,4 @@ python -m http.server 8768
 
 ## Автори
 
-Оформлення — з гри [«Клавіатурні перегони»](https://cikavo.me/labs/typing-race/) з Лабораторії [tkc-teacher](https://github.com/tkc-teacher/cikavo). Гра — cyrilreyda.
+Оформлення — з гри [«Клавіатурні перегони»](https://cikavo.me/labs/typing-race/). Джерело: Ткачук І. А. Інтерактивні уроки інформатики. — https://cikavo.me. — Ліцензія [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.uk). Гра — cyrilreyda.
