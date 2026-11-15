@@ -32,6 +32,7 @@
   .back-link:hover{text-decoration:underline;}
   .game-title{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .top-btn{margin-left:auto; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:14px; border:1.5px solid var(--teal); background:var(--surface); color:var(--teal-dark); border-radius:999px; padding:4px 14px; cursor:pointer; white-space:nowrap; text-decoration:none;}
+  .top-btn + .top-btn{margin-left:0;}   /* кнопки праворуч — купкою; гравець, як у перегонах, біля «На весь екран» */
   .top-btn:hover{background:#E3F7F6;}
   .fs-btn{margin-left:0; align-self:stretch; display:flex; align-items:center; padding:0 9px;}
   .fs-btn svg{width:20px; height:20px;}
@@ -188,7 +189,7 @@
   /* ---------- Гравці ---------- */
   .player-btn{margin-left:auto; display:inline-flex; align-items:center; gap:6px; max-width:200px; overflow:hidden;}
   .player-btn + .top-btn{margin-left:0;}
-  .col-btn{margin-left:0;}
+  .col-btn{margin-left:auto;}   /* «Колекція» тепер перша з кнопок праворуч: гравець — біля «На весь екран» */
   .player-btn .long{overflow:hidden; text-overflow:ellipsis;}
   .pb-pad{display:block; flex-shrink:0; width:34px; height:12px;}
   .overlay{position:fixed; inset:0; z-index:20; background:rgba(27,27,58,.45); display:none; align-items:center; justify-content:center; padding:16px;}
@@ -276,9 +277,9 @@
 <div class="topbar"><div class="topbar-inner">
   <a class="back-link" href="https://cyrilreyda.github.io/" data-ui>← Всі ігри</a>
   <span class="game-title">Цеглинки слів</span>
-  <button class="top-btn player-btn" id="playerBtn" type="button" title="Гравці на цьому комп'ютері" data-ui><img class="pb-pad" id="playerPad" alt=""><span class="long" id="playerName">Гравець</span></button>
   <button class="top-btn col-btn" id="colBtn" type="button" title="Колекція зібраних предметів" data-ui>🎒<span class="long"> Колекція</span></button>
   <a class="top-btn" href="guide/index.html" title="Інструкція для учнів і вчителів" data-ui>❓<span class="long"> Як грати</span></a>
+  <button class="top-btn player-btn" id="playerBtn" type="button" title="Гравці на цьому комп'ютері" data-ui><img class="pb-pad" id="playerPad" alt=""><span class="long" id="playerName">Гравець</span></button>
   <button class="top-btn fs-btn" id="fsBtn" type="button" title="На весь екран (F11)" aria-label="На весь екран (F11)" data-ui hidden>
     <svg class="fs-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 10.5L20 4M14 4h6v6M10.5 13.5L4 20M4 14v6h6"/></svg>
     <svg class="fs-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 4l-6 6M14 5v5h5M4 20l6-6M5 14h5v5"/></svg>
