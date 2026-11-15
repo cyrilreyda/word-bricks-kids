@@ -10,6 +10,7 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="theme-color" content="#16A3A0">
 <script src="/lock.js"></script>   <!-- замок «лише на уроці» з каталогу; у грі з архіву його немає, і вона відкривається як завжди -->
+<script src="/account.js"></script>   <!-- спільний акаунт учня з каталогу; без нього гра питає ім'я, як раніше -->
 <style>
   :root{
     --bg:#F6F5FB; --ink:#1B1B3A; --ink-soft:#514F72; --surface:#FFFFFF; --line:#E4E1F5;
@@ -1374,7 +1375,15 @@ try{
 }catch(e){}
 let player = null;
 let store = newProfile();
-function save(){ if(player) try{ localStorage.setItem(STORE_KEY, JSON.stringify(db)); }catch(e){} }
+// Спільний акаунт (/account.js каталогу): учень входить один раз для всіх ігор, прогрес іде за ним на інші пристрої.
+// Тоді в db лише він сам, а гравці, що грали тут до акаунта (legacy), можуть забрати свій прогрес при першому вході
+const ACC = window.Account;
+const legacy = db;
+function save(){
+  if(!player) return;
+  if(ACC){ ACC.save(STORE_KEY, store); return; }
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(db)); }catch(e){}
+}
 function loadPlayer(name){
   const p = Object.assign(newProfile(), db.players[name] || {});
   p.col = Object.assign({ info:{}, en:{} }, p.col);
@@ -2000,6 +2009,39 @@ $('nameForm').addEventListener('submit', e=>{
   enterGame(n);
 });
 $('nameCancel').addEventListener('click', ()=>nameOverlay.classList.remove('show'));
+// Акаунт: учень увійшов. Якщо в цій грі в нього ще нічого немає, а на комп'ютері є гравці з часів до акаунта,
+// пропонуємо забрати свій прогрес (забраний гравець зникає зі списку, щоб його не забрав ще хтось).
+// Збережені дані можуть бути неповні — бракуючі поля loadPlayer бере з newProfile()
+function enterAccount(){
+  const me = ACC.user.label, saved = ACC.get(STORE_KEY);
+  const begin = p=>{ db = { current:me, players:{ [me]:p || newProfile() } }; enterGame(me); };
+  const names = Object.keys(legacy.players).sort((a, b)=>a.localeCompare(b, 'uk'));
+  if(saved || ACC.user.guest || !names.length){ begin(saved); return; }
+  $('nameTitle').textContent = 'Ти вже грав на цьому пристрої?';
+  nameOverlay.querySelector('.sub').textContent = 'Обери своє ім\'я, щоб забрати свої бали, колекцію й наліпки.';
+  $('nameForm').hidden = true;
+  $('nameCancel').hidden = true;
+  $('nameErr').textContent = '';
+  // data-claim, а не data-n: на data-n у knownPlayers уже чекає вибір гравця зі старого списку
+  $('knownPlayers').innerHTML = names.map(n=>`<button type="button" class="chip-btn" data-claim="${esc(n)}">👤 ${esc(n)}</button>`).join('') +
+    `<button type="button" class="btn btn-ghost btn-small" data-new style="width:100%">Ні, почати спочатку</button>`;
+  $('knownPlayers').querySelectorAll('[data-claim]').forEach(b=>b.addEventListener('click', ()=>{
+    const p = legacy.players[b.dataset.claim];
+    delete legacy.players[b.dataset.claim];
+    if(legacy.current === b.dataset.claim) legacy.current = null;
+    try{ localStorage.setItem(STORE_KEY, JSON.stringify(legacy)); }catch(e){}
+    begin(p);
+  }));
+  $('knownPlayers').querySelector('[data-new]').addEventListener('click', ()=>begin(null));
+  nameOverlay.classList.add('show');
+}
+// Дані змінилися з іншого пристрою (account.js уже звів їх із цими): підхоплюємо, не перериваючи гру
+ACC?.on('update', key=>{
+  if(!player || key !== STORE_KEY) return;
+  Object.assign(store, ACC.get(STORE_KEY));
+  renderPlayerBtn();
+  if(!G) renderSetup();
+});
 function enterGame(name){
   loadPlayer(name);
   nameOverlay.classList.remove('show');
@@ -2008,6 +2050,17 @@ function enterGame(name){
   toSetup();
 }
 function renderProfile(){
+  if(ACC){
+    const u = ACC.user;
+    $('profTitle').textContent = 'Вхід';
+    $('addForm').hidden = true;
+    $('addErr').textContent = '';
+    $('playerList').innerHTML = `<div class="pl-row me"><img class="pb-pad" src="${padThumb(chosen('paddle'))}" alt="">
+      <span class="pl-name">${esc(u.full)}<small>${u.guest ? 'граєш без входу: прогрес лише на цьому пристрої' : 'прогрес зберігається для всіх ігор і пристроїв'}</small></span>
+      <button type="button" class="btn btn-primary btn-small" id="logoutBtn">${u.guest ? 'Увійти' : 'Вийти'}</button></div>`;
+    $('logoutBtn').addEventListener('click', ()=>ACC.logout());
+    return;
+  }
   const names = Object.keys(db.players).sort((a, b)=>a === player ? -1 : b === player ? 1 : a.localeCompare(b, 'uk'));
   $('playerList').innerHTML = names.map(n=>{
     const p = db.players[n], me = n === player;
@@ -2023,7 +2076,7 @@ function renderProfile(){
   $('addErr').textContent = '';
 }
 function openProfile(){
-  if(!player){ openNameModal(true); return; }
+  if(!player){ if(!ACC) openNameModal(true); return; }
   if(G) toSetup();
   renderProfile();
   profileOverlay.classList.add('show');
@@ -2669,10 +2722,11 @@ try{
   }
 }catch(e){}
 updateTeacherNote();
-if(db.current && db.players[db.current]) loadPlayer(db.current);
+if(!ACC && db.current && db.players[db.current]) loadPlayer(db.current);
 renderPlayerBtn();
 renderSetup();
-if(!player) openNameModal(true);
+if(ACC) ACC.ready(enterAccount);
+else if(!player) openNameModal(true);
 // Шрифт для слів на полі: коли завантажиться, мініатюри «Клавіші» перемальовуємо
 if(document.fonts) document.fonts.load(`800 20px ${FONT}`).then(()=>{ for(const k in thumbCache) if(k.startsWith('b:keys')) delete thumbCache[k]; if(!$('setup').hidden) renderGarage(); }).catch(()=>{});
 // Офлайн: обробник sw.js зберігає гру в браузері, щоб вона відкривалась без інтернету
