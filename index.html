@@ -1396,8 +1396,8 @@ function loadPlayer(name){
 
 /* ================= Звук ================= */
 // Звук увімкнено за замовчуванням. Учням перемикача не показуємо: вчитель вимикає звук адресою ?zvuk=tykho
-// (вмикає назад ?zvuk=klas) або Ctrl+Alt+Z — як в інших іграх. Режим запам'ятовується на цьому пристрої
-const SOUND_KEY = 'word-bricks-kids-sound';
+// (вмикає назад ?zvuk=klas) або Ctrl+Alt+Z. Перемикач один для всіх ігор сайту на цьому пристрої: 'off' — без звуку
+const SOUND_KEY = 'site-sound';
 let soundOn = true;
 try{ soundOn = localStorage.getItem(SOUND_KEY) !== 'off'; }catch(e){}
 function setSound(on){
@@ -2056,10 +2056,14 @@ function renderProfile(){
     $('profTitle').textContent = 'Вхід';
     $('addForm').hidden = true;
     $('addErr').textContent = '';
-    $('playerList').innerHTML = `<div class="pl-row me"><img class="pb-pad" src="${padThumb(chosen('paddle'))}" alt="">
+    // Ракетка — аватар: клік відкриває «Мої ігри» (account.js); кнопка під рядком — щоб діти її помітили
+    $('playerList').innerHTML = `<div class="pl-row me"><img class="pb-pad" id="accAv" src="${padThumb(chosen('paddle'))}" alt="" title="Мої ігри" style="cursor:pointer">
       <span class="pl-name">${esc(u.full)}<small>${u.guest ? 'граєш без входу: прогрес лише на цьому пристрої' : 'прогрес зберігається для всіх ігор і пристроїв'}</small></span>
-      <button type="button" class="btn btn-primary btn-small" id="logoutBtn">${u.guest ? 'Увійти' : 'Вийти'}</button></div>`;
+      <button type="button" class="btn btn-primary btn-small" id="logoutBtn">${u.guest ? 'Увійти' : 'Вийти'}</button></div>
+      <button type="button" class="btn btn-ghost btn-small" id="gamesBtn">🏅 Мої ігри</button>`;
     $('logoutBtn').addEventListener('click', ()=>ACC.logout());
+    $('accAv').addEventListener('click', ()=>ACC.showGames());
+    $('gamesBtn').addEventListener('click', ()=>ACC.showGames());
     return;
   }
   const names = Object.keys(db.players).sort((a, b)=>a === player ? -1 : b === player ? 1 : a.localeCompare(b, 'uk'));
@@ -2595,6 +2599,7 @@ function finish(){
   const earned = STICKERS.filter(st=>!store.stickers[st.id] && st.test(run, store));
   earned.forEach(st=>store.stickers[st.id] = 1);
   save();
+  window.Account?.played();   // раунд завершено — у «Мої ігри» (account.js сам не рахує вдруге)
 
   $('resEmoji').textContent = g.words ? '🎉' : '⏰';
   $('resTitle').textContent = stars === 3 ? 'Чудово!' : 'Час вийшов!';
