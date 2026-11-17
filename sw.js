@@ -1,7 +1,7 @@
 // Офлайн-режим гри. Онлайн сторінки завжди беруться з мережі (і оновлюють збережену копію),
 // без інтернету — зі збереженої копії. Параметри адреси (?boost, ?zvuk=…) на копію не впливають.
 // Після зміни списку FILES збільшити номер у CACHE, щоб браузери забрали нову копію.
-const CACHE = 'word-bricks-kids-v4';
+const CACHE = 'word-bricks-kids-v5';
 const FILES = ['./', './index.html', './guide/', './guide/index.html', './fonts/fonts.css',
                './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 // Спільні файли сайту, які гра підключає з кореня: замок уроку, акаунт, «Разом», «Клас», повний екран
@@ -10,38 +10,72 @@ FILES.push('/lock.js', '/account.js', '/duel.js', '/classrace.js', '/fullscreen.
 const TIMEOUT = 5000;   // повільна мережа в класі — після 5 с беремо збережену копію
 const STABLE = /\/(fonts|icons|img|audio)\//;   // шрифти, значки, картинки й звуки змінюються рідко: спершу збережена копія
 
-// Файл з мережі, лише якщо він змінився: умовний запит з міткою збереженої копії (ETag, Last-Modified), тож незмінений файл
-// не завантажується вдруге. null — не змінився. На кеш браузера тут не покладаємось: на комп'ютерах класу він часто порожній
-async function fetchIfChanged(f, saved){
-  const headers = new Headers();
-  if(saved){
-    const tag = saved.headers.get('ETag'), mod = saved.headers.get('Last-Modified');
-    if(tag) headers.set('If-None-Match', tag);
-    if(mod) headers.set('If-Modified-Since', mod);
+// Що завантажувати, вирішують хеші: files.json поруч із цим файлом (а для спільних файлів сайту — /files.json каталогу)
+// містить git-хеш кожного файлу, його оновлює .githooks/pre-commit. Файл качається, лише коли збереженої копії з таким
+// хешем немає ніде на сайті. ETag тут не годиться: GitHub Pages міняє його в усіх файлів після кожного push
+const SCOPE = new URL(self.registration.scope).pathname;
+const LIMIT = 30000;   // файл, що качається довше 30 с, не тримає решту: збережеться наступного разу
+// Каталог показує «Зберігаю ігри…», лише коли справді щось качається
+const news = self.BroadcastChannel ? new BroadcastChannel('offline-save') : null;
+
+// './' і './guide/' — ті самі файли, що './index.html' і './guide/index.html': качаємо раз, зберігаємо під обома адресами
+const source = f=>{ const p = new URL(f, self.registration.scope).pathname; return p.endsWith('/') ? p + 'index.html' : p; };
+
+// На кеш браузера не покладаємось: на комп'ютерах класу він часто порожній
+async function download(path){
+  const stop = new AbortController(), t = setTimeout(()=>stop.abort(), LIMIT);
+  try{
+    const res = await fetch(path, { cache:'no-store', signal:stop.signal });
+    if(!res.ok) throw new Error(`${path}: HTTP ${res.status}`);
+    const headers = new Headers(res.headers);
+    headers.delete('Content-Encoding'); headers.delete('Content-Length');   // тіло вже розпаковане
+    return new Response(await res.arrayBuffer(), { status:200, headers });
+  }finally{ clearTimeout(t); }
+}
+// Git-хеш вмісту, як у files.json
+async function hashOf(res){
+  const body = new Uint8Array(await res.clone().arrayBuffer()), head = new TextEncoder().encode(`blob ${body.length}\0`);
+  const all = new Uint8Array(head.length + body.length);
+  all.set(head); all.set(body, head.length);
+  return [...new Uint8Array(await crypto.subtle.digest('SHA-1', all))].map(b=>b.toString(16).padStart(2, '0')).join('').slice(0, 16);
+}
+async function wanted(){
+  const want = {};
+  for(const base of new Set([SCOPE, '/']))
+    for(const [f, h] of Object.entries(await (await download(base + 'files.json')).json())) want[base + f] = h;
+  return want;
+}
+// Копія з потрібним хешем у будь-якому сховищі сайту: цієї версії, попередньої, каталогу чи іншої гри (спільні файли)
+async function copyOf(path, hash){
+  for(const k of await caches.keys()){
+    const r = await (await caches.open(k)).match(path);
+    if(r && await hashOf(r) === hash) return r;
   }
-  const res = await fetch(new Request(f, { cache:'no-store', headers }));
-  if(res.status === 304 && saved) return null;
-  if(!res.ok) throw new Error(`${f}: HTTP ${res.status}`);
-  return res;
 }
 
-// Встановлення по файлу: що вже завантажилось, лишається в новому сховищі, і наступне відкриття докачує решту,
-// навіть якщо інтернет щоразу пропадає на півдорозі. Файл, що не змінився з попередньої версії, береться з неї
-async function fill(){
-  const c = await caches.open(CACHE);
-  const missing = (await Promise.all(FILES.map(async f=>{
-    if(await c.match(f)) return 0;
-    try{
-      const old = await caches.match(f);
-      const res = await fetchIfChanged(f, old);
-      await c.put(f, res || old);
-      return 0;
-    }catch(e){ return 1; }
-  }))).reduce((a, b)=>a + b, 0);
-  if(missing) throw new Error(`${CACHE}: ще не збережено ${missing}`);
+// atomic — оновлення на прохання каталогу: записуємо все разом, коли завантажено все, напівоновленої копії не буває.
+// Інакше (встановлення) кожен файл записується одразу, і наступне відкриття докачує лише решту
+async function sync(atomic){
+  const c = await caches.open(CACHE), want = await wanted(), writes = [];
+  const groups = new Map();
+  for(const f of FILES){ const p = source(f); groups.set(p, [...(groups.get(p) || []), f]); }
+  let told = false, failed = 0;
+  await Promise.all([...groups].map(async ([p, keys])=>{
+    const stale = [];
+    for(const f of keys){ const r = await c.match(f); if(!r || await hashOf(r) !== want[p]) stale.push(f); }
+    if(!stale.length) return;
+    let res = await copyOf(p, want[p]);
+    if(!res){
+      if(!told && news){ told = true; news.postMessage(SCOPE); }
+      try{ res = await download(p); }catch(e){ failed++; return; }
+    }
+    for(const f of stale) atomic ? writes.push([f, res.clone()]) : await c.put(f, res.clone());
+  }));
+  if(failed) throw new Error(`${CACHE}: не завантажено ${failed}`);
+  await Promise.all(writes.map(([f, res])=>c.put(f, res)));
 }
 self.addEventListener('install', e=>{
-  e.waitUntil(fill().then(()=>self.skipWaiting()));
+  e.waitUntil(sync(false).then(()=>self.skipWaiting()));
 });
 // Видаляємо лише старі версії цієї гри: усі ігри сайту cyrilreyda.github.io ділять одне сховище кешів.
 self.addEventListener('activate', e=>{
@@ -71,15 +105,9 @@ self.addEventListener('fetch', e=>{
   e.respondWith(Promise.race([fromNet, slow]).catch(()=>fromCache().then(r=>r || fromNet)).catch(()=>Response.error()));
 });
 
-// Оновлення збереженої копії на прохання каталогу: лише змінені файли, і записуються всі разом, коли завантажено все —
-// напівоновленої копії не буває. Каталогу відповідаємо, чи вдалося
-async function refresh(){
-  const c = await caches.open(CACHE);
-  const got = await Promise.all(FILES.map(async f=>[f, await fetchIfChanged(f, await c.match(f))]));
-  await Promise.all(got.filter(([, res])=>res).map(([f, res])=>c.put(f, res)));
-}
+// Оновлення збереженої копії на прохання каталогу; каталогу відповідаємо, чи вдалося
 self.addEventListener('message', e=>{
   if(e.data !== 'refresh') return;
   const port = e.ports[0];
-  e.waitUntil(refresh().then(()=>true, ()=>false).then(ok=>{ if(port) port.postMessage(ok); }));
+  e.waitUntil(sync(true).then(()=>true, ()=>false).then(ok=>{ if(port) port.postMessage(ok); }));
 });

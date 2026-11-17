@@ -101,7 +101,7 @@
 
 <details><summary>Як це влаштовано</summary>
 
-Гра — один файл `index.html`, без сервера й збирання. Поле малюється на `<canvas>` у логічних координатах 600×660 і масштабується під вікно. Параметри рівнів — `LEVELS`, місії — `MISSIONS`, наліпки — `STICKERS`, оформлення — `FIELDS`, `BRICKS`, `PADDLES`. Шрифти Baloo 2 і Nunito Sans вбудовані в `fonts/fonts.css` (ліцензія SIL OFL 1.1, тексти — у `fonts/OFL-*.txt`). Офлайн на сайті забезпечує `sw.js`, опис застосунку — `manifest.webmanifest`, іконки — `icons/` (джерело — `icons/icon.svg`). Після зміни списку файлів у `sw.js` збільшити номер кешу `CACHE`.
+Гра — один файл `index.html`, без сервера й збирання. Поле малюється на `<canvas>` у логічних координатах 600×660 і масштабується під вікно. Параметри рівнів — `LEVELS`, місії — `MISSIONS`, наліпки — `STICKERS`, оформлення — `FIELDS`, `BRICKS`, `PADDLES`. Шрифти Baloo 2 і Nunito Sans вбудовані в `fonts/fonts.css` (ліцензія SIL OFL 1.1, тексти — у `fonts/OFL-*.txt`). Офлайн на сайті забезпечує `sw.js`, опис застосунку — `manifest.webmanifest`, іконки — `icons/` (джерело — `icons/icon.svg`). Після зміни списку файлів у `sw.js` збільшити номер кешу `CACHE`. Що оновити в збереженій копії, `sw.js` вирішує за `files.json` (git-хеші файлів, див. README каталогу); його оновлює хук `.githooks/pre-commit` з кожним комітом, у новій копії репозиторію хук вмикає `git config core.hooksPath .githooks`.
 
 </details>
 

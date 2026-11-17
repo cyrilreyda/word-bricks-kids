@@ -1,0 +1,4 @@
+#!/bin/sh
+# files.json (хеші файлів для офлайн-режиму, див. sw.js) оновлюється разом із кожним комітом.
+# Підключення в новій копії репозиторію: git config core.hooksPath .githooks
+node .githooks/files-json.js && git add files.json
